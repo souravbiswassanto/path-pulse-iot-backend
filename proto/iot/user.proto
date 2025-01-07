@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot";
+
+import "proto/google/api/datetime.proto";
+
+enum Gender {
+  male = 0;
+  female = 1;
+  other = 2;
+}
+
+enum FitnessGoal {
+  UNKNOWN = 0;
+  WEIGHT_LOSS = 1;
+  MUSCLE_GAIN = 2;
+  MAINTENANCE = 3;
+}
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  int32 age = 3;
+  float weight = 4;
+  float height = 5;
+  float diabetic_level = 6;
+  Gender gender = 7;
+  string email = 8;
+  string phone_no = 9;
+  string address = 10;
+  BloodPressure bp = 11;
+  FitnessGoal fitness_goal = 12;
+  google.type.DateTime created_at = 13;
+  google.type.DateTime updated_at = 14;
+  float calories_burned = 15;
+}
+
+message BloodPressure {
+  int32 systolic = 1;
+  int32 diastolic = 2;
+}
+
+message DietaryChart {
+  int32 protein = 1;
+  int32 lipid = 2;
+  int32 carbs = 3;
+}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot";
+
+import "proto/iot/user.proto";
+
+message Position {
+  uint64 user_id = 1;
+  float Latitude = 2;
+  float Longitude = 3;
+}
+
+message UserID {
+  uint64 id = 1;
+}
+
+message Checkpoint {
+  uint64 c_id = 1;
+  Position pos = 2;
+}
+
+message CheckpointToAndFrom {
+  Checkpoint to = 1;
+  Checkpoint from = 2;
+}
+
+message Distance {
+  uint64 meter = 1;
+}
+
+message Empty {}
+
+service Tracker {
+  rpc GetLocation(UserID) returns (Position) {}
+  rpc UpdateLocation(Position) returns (Empty) {}
+  rpc AddCheckPoint(Checkpoint) returns (Empty) {}
+  rpc UpdateCheckpoint(Checkpoint) returns (Empty) {}
+  rpc UpdateBloodPressure(BloodPressure) returns(Empty) {}
+  rpc GetTotalDistanceBetweenCheckpoint(CheckpointToAndFrom) returns (Distance) {}
+}
