@@ -10,10 +10,6 @@ message Position {
   float Longitude = 3;
 }
 
-message UserID {
-  uint64 id = 1;
-}
-
 message Checkpoint {
   uint64 c_id = 1;
   Position pos = 2;
@@ -28,13 +24,22 @@ message Distance {
   uint64 meter = 1;
 }
 
-message Empty {}
+message CalorieBurned {
+  uint64 calorie = 1;
+}
+
+message BloodPressureWithUserId {
+  uint64 userId = 1;
+  BloodPressure bp = 2;
+}
 
 service Tracker {
   rpc GetLocation(UserID) returns (Position) {}
   rpc UpdateLocation(Position) returns (Empty) {}
   rpc AddCheckPoint(Checkpoint) returns (Empty) {}
   rpc UpdateCheckpoint(Checkpoint) returns (Empty) {}
-  rpc UpdateBloodPressure(BloodPressure) returns(Empty) {}
+  rpc GetDietaryChart(UserID) returns (DietaryChart) {}
+  rpc UpdateBloodPressure(BloodPressureWithUserId) returns(Empty) {}
   rpc GetTotalDistanceBetweenCheckpoint(CheckpointToAndFrom) returns (Distance) {}
+  rpc GetCalorieBurnedBetweenCheckpoint(CheckpointToAndFrom) returns (CalorieBurned) {}
 }

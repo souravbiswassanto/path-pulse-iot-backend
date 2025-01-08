@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot";
+
+import "proto/iot/user.proto";
+import "proto/iot/group.proto";
+
+message Event {
+  uint64 e_id = 1;
+  uint64 g_id = 2;
+  uint64 publisher = 3; // user_id
+  EventState state = 4;
+  repeated UserID interested = 5;
+  repeated UserID going = 6;
+  repeated User notInterested = 7;
+  EventDescription eventDesc = 8;
+}
+
+
+message EventDescription {
+  string name = 1;
+  EventType type = 2;
+  CustomEventType c_type = 3;
+  string desc = 4;
+}
+
+enum EventType {
+  running = 0;
+  walking = 1;
+  exercise = 2;
+  discussion = 3;
+  hiking = 4;
+  travelling = 5;
+  Game = 6;
+}
+
+message CustomEventType {
+  string eventType = 1;
+  string constraints = 2;
+}
+
+enum EventState {
+  ongoing = 0;
+  closed = 1;
+  upcoming = 2;
+}
+
+
+message EventList {
+  repeated Event eventList = 1;
+}
+
+message EvenetId {
+  uint64 e_id = 1;
+}
+
+
+service EventManager {
+  rpc AddEvent(Event) returns (Empty) {}
+  rpc UpdateEvent(Event) returns (Empty) {}
+  rpc DeleteEvent(EvenetId) returns (Empty) {}
+  rpc GetSingleEventDetails(EvenetId) returns (Event) {}
+  rpc ListEventsBySingleUser(UserID) returns (EventList) {}
+  rpc ListEventsOnSingleGroup(GroupId) returns (EventList) {}
+}

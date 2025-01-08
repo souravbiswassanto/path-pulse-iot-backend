@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot";
+
+import "proto/iot/user.proto";
+import "proto/iot/tracker.proto";
+import "proto/iot/event.proto";
+
+message Group {
+  uint64 g_id = 1;
+  string name = 2;
+  repeated UserID members = 3;
+  repeated Event events = 4;
+}
+
+
+
+
+message GroupId {
+  uint64 g_id = 1;
+}
+
+
+message UserAdd {
+  uint64 userId = 1;
+  uint64 groupId = 2;
+}
+
+service GroupManager {
+  rpc CreateGroup(Group) returns (Empty) {}
+  rpc UpdateGroup(Group) returns (Empty) {}
+  rpc DeleteGroup(GroupId) returns (Empty) {}
+  rpc AddUserToGroup(UserAdd) returns (Empty) {}
+}
