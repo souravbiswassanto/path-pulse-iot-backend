@@ -2,8 +2,8 @@ syntax = "proto3";
 
 option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/event";
 
-import "iot/user.proto";
-import "iot/group.proto";
+import "iot/user/user.proto";
+import "iot/group/group.proto";
 
 enum EventState {
   ongoing = 0;

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker";
 
-import "iot/user.proto";
+import "iot/user/user.proto";
 
 message Position {
   uint64 user_id = 1;
