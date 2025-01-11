@@ -1,25 +1,18 @@
 syntax = "proto3";
 
-option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot";
+option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/group";
 
-import "proto/iot/user.proto";
-import "proto/iot/tracker.proto";
-import "proto/iot/event.proto";
-
-message Group {
-  uint64 g_id = 1;
-  string name = 2;
-  repeated UserID members = 3;
-  repeated Event events = 4;
-}
-
-
-
+import "iot/user.proto";
+import "iot/tracker.proto";
 
 message GroupId {
   uint64 g_id = 1;
 }
-
+message Group {
+  uint64 g_id = 1;
+  string name = 2;
+  repeated UserID members = 3;
+}
 
 message UserAdd {
   uint64 userId = 1;
