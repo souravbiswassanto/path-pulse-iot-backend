@@ -12,6 +12,12 @@ message Position {
 
 message Checkpoint {
   uint64 c_id = 1;
+  uint64 u_id = 2;
+  Position pos = 3;
+}
+
+message PositionWithCheckpointId {
+  uint64 c_id = 1;
   Position pos = 2;
 }
 
@@ -35,11 +41,13 @@ message BloodPressureWithUserId {
 
 service Tracker {
   rpc GetLocation(UserID) returns (Position) {}
-  rpc UpdateLocation(Position) returns (Empty) {}
+  rpc UpdateLocation(stream Position) returns (Empty) {}
   rpc AddCheckPoint(Checkpoint) returns (Empty) {}
   rpc UpdateCheckpoint(Checkpoint) returns (Empty) {}
   rpc GetDietaryChart(UserID) returns (DietaryChart) {}
   rpc UpdateBloodPressure(BloodPressureWithUserId) returns(Empty) {}
+  rpc GetRealTimeDistanceCovered(stream PositionWithCheckpointId) returns (stream Distance) {}
+  rpc GetRealTimeCaloriesBurned(stream PositionWithCheckpointId) returns (stream CalorieBurned) {}
   rpc GetTotalDistanceBetweenCheckpoint(CheckpointToAndFrom) returns (Distance) {}
   rpc GetCalorieBurnedBetweenCheckpoint(CheckpointToAndFrom) returns (CalorieBurned) {}
 }

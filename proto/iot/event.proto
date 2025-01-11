@@ -60,6 +60,6 @@ service EventManager {
   rpc UpdateEvent(Event) returns (Empty) {}
   rpc DeleteEvent(EvenetId) returns (Empty) {}
   rpc GetSingleEventDetails(EvenetId) returns (Event) {}
-  rpc ListEventsBySingleUser(UserID) returns (EventList) {}
-  rpc ListEventsOnSingleGroup(GroupId) returns (EventList) {}
+  rpc ListEventsOfSingleUser(UserID) returns (EventList) {}
+  rpc ListEventsOfSingleGroup(GroupId) returns (EventList) {}
 }
