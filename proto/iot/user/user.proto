@@ -50,9 +50,6 @@ message User {
   float calories_burned = 15;
 }
 
-
-
-
 service UserManager {
   rpc GetUser(UserID) returns (User) {}
   rpc CreateUser(User) returns (Empty) {}
