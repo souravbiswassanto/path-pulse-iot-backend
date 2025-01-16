@@ -4,6 +4,7 @@ option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protoge
 
 import "iot/user/user.proto";
 import "iot/group/group.proto";
+import "google/api/datetime.proto";
 
 enum EventState {
   ongoing = 0;
@@ -23,12 +24,12 @@ enum EventType {
 
 message CustomEventType {
   string eventType = 1;
-  string constraints = 2;
+  repeated string constraints = 2;
 }
 
 message EventDescription {
   string name = 1;
-  EventType type = 2;
+  EventType e_type = 2;
   CustomEventType c_type = 3;
   string desc = 4;
 }
@@ -42,6 +43,8 @@ message Event {
   repeated UserID going = 6;
   repeated User notInterested = 7;
   EventDescription eventDesc = 8;
+  google.type.DateTime event_date_time = 9;
+
 }
 
 message EventList {

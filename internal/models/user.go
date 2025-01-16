@@ -1,25 +1,24 @@
 package models
 
-import "time"
-
 type FitnessGoal string
+type UserID uint64
 
 const (
-	FitnessGoalUnknown     = "unknown"
-	FitnessGOalWeightLost  = "WeightLoss"
-	FitnessGoalMuscleGain  = "MuscleGain"
-	FitnessGoalMaintenance = "Maintenance"
+	FitnessGoalUnknown     FitnessGoal = "unknown"
+	FitnessGOalWeightLost  FitnessGoal = "WeightLoss"
+	FitnessGoalMuscleGain  FitnessGoal = "MuscleGain"
+	FitnessGoalMaintenance FitnessGoal = "Maintenance"
 )
 
 type User struct {
-	ID          int32       `json:"id"`
+	ID          UserID      `json:"id"`
 	Name        string      `json:"name,omitempty"`
 	Age         int         `json:"age,omitempty"`
 	Gender      string      `json:"gender,omitempty"`
-	ContactInfo ContactInfo `json:"contactInfo,omitempty"`
+	ContactInfo ContactInfo `json:"contact_info,omitempty"`
 	Factors     Factors     `json:"factors,omitempty"`
-	CreatedAt   *time.Time  `json:"createdAt,omitempty"`
-	UpdatedAt   *time.Time  `json:"updatedAt,omitempty"`
+	CreatedAt   *string     `json:"created_at,omitempty"`
+	UpdatedAt   *string     `json:"updated_at,omitempty"`
 	Fitness     Fitness
 }
 
@@ -31,11 +30,11 @@ type ContactInfo struct {
 }
 
 type Factors struct {
-	UserID        int32         `json:"userID,omitempty"`
+	UserID        int32         `json:"user_id,omitempty"`
 	Height        float32       `json:"height,omitempty"`
 	Weight        float32       `json:"weight,omitempty"`
-	DiabeticLevel float32       `json:"diabeticLevel,omitempty"`
-	BP            BloodPressure `json:"BP,omitempty"`
+	DiabeticLevel float32       `json:"diabetic_level,omitempty"`
+	BP            BloodPressure `json:"bp,omitempty"`
 }
 
 type BloodPressure struct {
@@ -45,5 +44,5 @@ type BloodPressure struct {
 
 type Fitness struct {
 	Goal          FitnessGoal `json:"goal,omitempty"`
-	CalorieBurned int32       `json:"calorieBurned,omitempty"`
+	CalorieBurned int32       `json:"calorie_burned,omitempty"`
 }

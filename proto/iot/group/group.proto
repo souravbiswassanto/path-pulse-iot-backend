@@ -3,7 +3,6 @@ syntax = "proto3";
 option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/group";
 
 import "iot/user/user.proto";
-import "iot/tracker/tracker.proto";
 
 message GroupId {
   uint64 g_id = 1;
