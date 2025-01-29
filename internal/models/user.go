@@ -37,11 +37,6 @@ type Factors struct {
 	BP            BloodPressure `json:"bp,omitempty"`
 }
 
-type BloodPressure struct {
-	Systolic  int `json:"systolic,omitempty"`
-	Diastolic int `json:"diastolic,omitempty"`
-}
-
 type Fitness struct {
 	Goal          FitnessGoal `json:"goal,omitempty"`
 	CalorieBurned int32       `json:"calorie_burned,omitempty"`
