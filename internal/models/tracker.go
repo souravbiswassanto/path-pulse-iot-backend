@@ -8,13 +8,13 @@ type Position struct {
 
 type Checkpoint struct {
 	CID uint64   `json:"c_id,omitempty"`
-	UID uint64   `json:"u_id,omitempty"`
+	UID UserID   `json:"u_id,omitempty"`
 	Pos Position `json:"pos,omitempty"`
 }
 
 type BloodPressure struct {
-	Systolic  uint64 `json:"systolic,omitempty"`
-	Diastolic uint64 `json:"diastolic,omitempty"`
+	Systolic  int `json:"systolic,omitempty"`
+	Diastolic int `json:"diastolic,omitempty"`
 }
 
 type BloodPressureWithUserID struct {

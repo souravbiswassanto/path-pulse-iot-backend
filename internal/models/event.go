@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type EventType int
 type EventState string
 
@@ -38,5 +40,5 @@ type Event struct {
 	Going         []UserID         `json:"going,omitempty"`
 	NotInterested []UserID         `json:"not_interested,omitempty"`
 	EventDesc     EventDescription `json:"event_desc,omitempty"`
-	EventDateTime *string          `json:"event_date_time,omitempty"`
+	EventDateTime *time.Time       `json:"event_date_time,omitempty"`
 }

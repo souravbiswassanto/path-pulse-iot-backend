@@ -6,6 +6,7 @@ toolchain go1.22.10
 
 require (
 	github.com/golang/protobuf v1.5.4
+	github.com/google/uuid v1.6.0
 	google.golang.org/genproto v0.0.0-20250106144421-5f5ef82da422
 	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.36.2

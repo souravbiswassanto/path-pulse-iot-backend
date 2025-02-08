@@ -23,14 +23,14 @@ type User struct {
 }
 
 type ContactInfo struct {
-	UserID  int32  `json:"user_id,omitempty"`
+	UserID  UserID `json:"user_id,omitempty"`
 	Email   string `json:"email,omitempty"`
 	Phone   string `json:"phone"`
 	Address string `json:"address,omitempty"`
 }
 
 type Factors struct {
-	UserID        int32         `json:"user_id,omitempty"`
+	UserID        UserID        `json:"user_id,omitempty"`
 	Height        float32       `json:"height,omitempty"`
 	Weight        float32       `json:"weight,omitempty"`
 	DiabeticLevel float32       `json:"diabetic_level,omitempty"`
