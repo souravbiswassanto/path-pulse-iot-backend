@@ -1,10 +1,8 @@
 package in_memory
 
 import (
-	"fmt"
-	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
+	custom_error "github.com/souravbiswassanto/path-pulse-iot-backend/internal/custom-error"
 	"sync"
-	"time"
 )
 
 type Store[K comparable, V interface{}] struct {
@@ -18,43 +16,23 @@ func NewStore[K comparable, V interface{}]() *Store[K, V] {
 	}
 }
 
-//type EventStore[K comparable, V any] struct {
-//	store map[K]V
-//	mu    sync.RWMutex
+//type InMemoryStore struct {
+//	eventStore      *Store[uint64, models.Event]
+//	groupStore      *Store[uint64, models.Group]
+//	userStore       *Store[uint64, models.User]
+//	checkpointStore *Store[uint64, models.Checkpoint]
+//	positionStore   *Store[*time.Time, models.Position]
 //}
 //
-
-//type GroupStore[K comparable, V any] struct {
-//	store map[K]V
-//	mu    sync.RWMutex
+//func NewInMemoryStore() *InMemoryStore {
+//	return &InMemoryStore{
+//		eventStore:      NewStore[uint64, models.Event](),
+//		groupStore:      NewStore[uint64, models.Group](),
+//		userStore:       NewStore[uint64, models.User](),
+//		checkpointStore: NewStore[uint64, models.Checkpoint](),
+//		positionStore:   NewStore[*time.Time, models.Position](),
+//	}
 //}
-//
-//type CheckpointStore[K comparable, V any] struct {
-//	store map[K]V
-//	mu    sync.RWMutex
-//}
-//
-//type PositionStore[K comparable, V any] struct {
-//	store map[K]V
-//}
-
-type InMemoryStore struct {
-	eventStore      *Store[uint64, models.Event]
-	groupStore      *Store[uint64, models.Group]
-	userStore       *Store[uint64, models.User]
-	checkpointStore *Store[uint64, models.Checkpoint]
-	positionStore   *Store[*time.Time, models.Position]
-}
-
-func NewInMemoryStore() *InMemoryStore {
-	return &InMemoryStore{
-		eventStore:      NewStore[uint64, models.Event](),
-		groupStore:      NewStore[uint64, models.Group](),
-		userStore:       NewStore[uint64, models.User](),
-		checkpointStore: NewStore[uint64, models.Checkpoint](),
-		positionStore:   NewStore[*time.Time, models.Position](),
-	}
-}
 
 func (s *Store[K, V]) Create(key K, value V) {
 	s.mu.Lock()
@@ -62,13 +40,15 @@ func (s *Store[K, V]) Create(key K, value V) {
 	s.store[key] = value
 }
 
+// Get returns the value if exists,
+// unless it returns a keyNotFound error
 func (s *Store[K, V]) Get(key K) (V, error) {
 	s.mu.RLock()
 	defer s.mu.Unlock()
 	v, ok := s.store[key]
 	if !ok {
 		var zero V
-		return zero, fmt.Errorf("key %v not found", key)
+		return zero, custom_error.ErrKeyNotFound
 	}
 	return v, nil
 }

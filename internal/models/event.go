@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type EventType int
 type EventState string
@@ -34,11 +36,11 @@ type EventDescription struct {
 type Event struct {
 	EventID       uint64           `json:"event_id,omitempty"`
 	GroupID       uint64           `json:"group_id,omitempty"`
-	PublisherID   UserID           `json:"publisher_id,omitempty"`
+	PublisherID   *UserID          `json:"publisher_id,omitempty"`
 	State         EventState       `json:"state,omitempty"`
-	Interested    []UserID         `json:"interested,omitempty"`
-	Going         []UserID         `json:"going,omitempty"`
-	NotInterested []UserID         `json:"not_interested,omitempty"`
+	Interested    []*UserID        `json:"interested,omitempty"`
+	Going         []*UserID        `json:"going,omitempty"`
+	NotInterested []*UserID        `json:"not_interested,omitempty"`
 	EventDesc     EventDescription `json:"event_desc,omitempty"`
 	EventDateTime *time.Time       `json:"event_date_time,omitempty"`
 }

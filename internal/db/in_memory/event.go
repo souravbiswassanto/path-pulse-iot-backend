@@ -1,9 +1,9 @@
 package in_memory
 
 type EventStore[K comparable, V any] struct {
-	store *Store[K, V]
+	*Store[K, V]
 }
 
 func NewEventStore[K comparable, V any]() EventStore[K, V] {
-	return EventStore[K, V]{store: NewStore[K, V]()}
+	return EventStore[K, V]{NewStore[K, V]()}
 }

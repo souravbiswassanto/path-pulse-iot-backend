@@ -11,9 +11,9 @@ const (
 )
 
 type User struct {
-	ID          UserID      `json:"id"`
+	ID          *UserID     `json:"id"`
 	Name        string      `json:"name,omitempty"`
-	Age         int         `json:"age,omitempty"`
+	Age         int32       `json:"age,omitempty"`
 	Gender      string      `json:"gender,omitempty"`
 	ContactInfo ContactInfo `json:"contact_info,omitempty"`
 	Factors     Factors     `json:"factors,omitempty"`
@@ -23,14 +23,14 @@ type User struct {
 }
 
 type ContactInfo struct {
-	UserID  UserID `json:"user_id,omitempty"`
-	Email   string `json:"email,omitempty"`
-	Phone   string `json:"phone"`
-	Address string `json:"address,omitempty"`
+	UserID  *UserID `json:"user_id,omitempty"`
+	Email   string  `json:"email,omitempty"`
+	Phone   string  `json:"phone"`
+	Address string  `json:"address,omitempty"`
 }
 
 type Factors struct {
-	UserID        UserID        `json:"user_id,omitempty"`
+	UserID        *UserID       `json:"user_id,omitempty"`
 	Height        float32       `json:"height,omitempty"`
 	Weight        float32       `json:"weight,omitempty"`
 	DiabeticLevel float32       `json:"diabetic_level,omitempty"`
