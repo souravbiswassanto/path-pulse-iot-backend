@@ -13,8 +13,8 @@ type Checkpoint struct {
 }
 
 type BloodPressure struct {
-	Systolic  int `json:"systolic,omitempty"`
-	Diastolic int `json:"diastolic,omitempty"`
+	Systolic  int32 `json:"systolic,omitempty"`
+	Diastolic int32 `json:"diastolic,omitempty"`
 }
 
 type BloodPressureWithUserID struct {
