@@ -44,7 +44,7 @@ func (s *Store[K, V]) Create(key K, value V) {
 // unless it returns a keyNotFound error
 func (s *Store[K, V]) Get(key K) (V, error) {
 	s.mu.RLock()
-	defer s.mu.Unlock()
+	defer s.mu.RUnlock()
 	v, ok := s.store[key]
 	if !ok {
 		var zero V
@@ -55,13 +55,13 @@ func (s *Store[K, V]) Get(key K) (V, error) {
 
 func (s *Store[K, V]) Update(key K, value V) {
 	s.mu.Lock()
-	defer s.mu.Unlock()
+	defer s.mu.RUnlock()
 	s.store[key] = value
 }
 
 func (s *Store[K, V]) Delete(key K) {
 	s.mu.Lock()
-	defer s.mu.Unlock()
+	defer s.mu.RUnlock()
 	delete(s.store, key)
 }
 

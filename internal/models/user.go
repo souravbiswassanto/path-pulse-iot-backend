@@ -11,7 +11,7 @@ const (
 )
 
 type User struct {
-	ID          *UserID     `json:"id"`
+	ID          UserID      `json:"id"`
 	Name        string      `json:"name,omitempty"`
 	Age         int32       `json:"age,omitempty"`
 	Gender      string      `json:"gender,omitempty"`

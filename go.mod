@@ -6,6 +6,7 @@ toolchain go1.22.10
 
 require (
 	github.com/golang/protobuf v1.5.4
+	github.com/spf13/cobra v1.8.1
 	gomodules.xyz/pointer v0.1.0
 	google.golang.org/genproto v0.0.0-20250106144421-5f5ef82da422
 	google.golang.org/grpc v1.69.2
@@ -13,6 +14,8 @@ require (
 )
 
 require (
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

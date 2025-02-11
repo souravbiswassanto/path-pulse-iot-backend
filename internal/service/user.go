@@ -9,12 +9,17 @@ import (
 )
 
 type UserService struct {
-	userDb in_memory.UserStore[*models.UserID, *models.User]
+	userDb in_memory.UserStore[models.UserID, *models.User]
 }
 
 func NewUserService() *UserService {
+	userDb := in_memory.NewUserStore[models.UserID, *models.User]()
+	id := uint64(1)
+	userDb.Create((models.UserID)(id), &models.User{
+		ID: (models.UserID)(id),
+	})
 	return &UserService{
-		userDb: in_memory.NewUserStore[*models.UserID, *models.User](),
+		userDb: userDb,
 	}
 }
 
@@ -43,10 +48,7 @@ func (us *UserService) UpdateUser(ctx context.Context, u *models.User) error {
 	return nil
 }
 
-func (us *UserService) DeleteUser(_ context.Context, u *models.UserID) error {
-	if u == nil {
-		return fmt.Errorf("user is nil")
-	}
+func (us *UserService) DeleteUser(_ context.Context, u models.UserID) error {
 	_, err := us.userDb.Get(u)
 	if err != nil && ce.IsKeyNotFoundErr(err) {
 		return nil
@@ -55,7 +57,7 @@ func (us *UserService) DeleteUser(_ context.Context, u *models.UserID) error {
 	return nil
 }
 
-func (us *UserService) GetUser(_ context.Context, u *models.UserID) (*models.User, error) {
+func (us *UserService) GetUser(_ context.Context, u models.UserID) (*models.User, error) {
 	k, err := us.userDb.Get(u)
 	if err != nil {
 		return nil, err

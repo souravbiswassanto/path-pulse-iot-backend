@@ -7,66 +7,119 @@ import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
 	proto "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
 	"gomodules.xyz/pointer"
+	"google.golang.org/grpc"
+	"log"
 )
 
-type UserHandlerSer struct {
+type UserServerHandlerSer struct {
 	svc *service.UserService
 	proto.UnimplementedUserManagerServer
 }
 
-func NewUserHandler() *UserHandlerSer {
-	return &UserHandlerSer{
+func NewUserServerHandler() *UserServerHandlerSer {
+	return &UserServerHandlerSer{
 		svc: service.NewUserService(),
 	}
 }
 
-func (uh *UserHandlerSer) GetUser(ctx context.Context, uid *proto.UserID) (*proto.User, error) {
+func (ush *UserServerHandlerSer) GetUser(ctx context.Context, uid *proto.UserID) (*proto.User, error) {
+
 	if uid == nil {
 		return nil, fmt.Errorf("given user id can't be nil")
 	}
-	user, err := uh.svc.GetUser(ctx, (*models.UserID)(&uid.Id))
+	user, err := ush.svc.GetUser(ctx, (models.UserID)(uid.Id))
 	if err != nil {
 		return nil, err
 	}
 	return modelToProto(user), nil
 }
 
-func (uh *UserHandlerSer) CreateUser(ctx context.Context, user *proto.User) (*proto.Empty, error) {
+func (ush *UserServerHandlerSer) CreateUser(ctx context.Context, user *proto.User) (*proto.Empty, error) {
 	if user == nil {
 		return &proto.Empty{}, fmt.Errorf("given user is nil")
 	}
-	err := uh.svc.CreateUser(ctx, protoToModel(user))
+	err := ush.svc.CreateUser(ctx, protoToModel(user))
 	if err != nil {
 		return nil, err
 	}
 	return &proto.Empty{}, nil
 }
 
-func (uh *UserHandlerSer) UpdateUser(ctx context.Context, user *proto.User) (*proto.Empty, error) {
+func (ush *UserServerHandlerSer) UpdateUser(ctx context.Context, user *proto.User) (*proto.Empty, error) {
 	if user == nil {
 		return nil, fmt.Errorf("upating user can't be nil")
 	}
-	err := uh.svc.UpdateUser(ctx, protoToModel(user))
+	err := ush.svc.UpdateUser(ctx, protoToModel(user))
 	if err != nil {
 		return nil, err
 	}
 	return &proto.Empty{}, nil
 }
 
-func (uh *UserHandlerSer) DeleteUser(ctx context.Context, uid *proto.UserID) (*proto.Empty, error) {
+func (ush *UserServerHandlerSer) DeleteUser(ctx context.Context, uid *proto.UserID) (*proto.Empty, error) {
 	if uid == nil {
 		return nil, fmt.Errorf("the request user id can't be nil")
 	}
-	err := uh.svc.DeleteUser(ctx, (*models.UserID)(&uid.Id))
+	err := ush.svc.DeleteUser(ctx, (models.UserID)(uid.Id))
 	if err != nil {
 		return nil, err
 	}
 	return &proto.Empty{}, nil
+}
+
+type UserClientHandler struct {
+	cc proto.UserManagerClient
+}
+
+func NewUserManagerClientHandler(cc grpc.ClientConnInterface) *UserClientHandler {
+	return &UserClientHandler{
+		cc: proto.NewUserManagerClient(cc),
+	}
+}
+
+func (uch *UserClientHandler) CreateUser(user *proto.User) error {
+	if user == nil || user.Id == nil {
+		return fmt.Errorf("cant't create user, user or userID is nil")
+	}
+	_, err := uch.cc.CreateUser(context.TODO(), user)
+	if err != nil {
+		return err
+	}
+	log.Println("successfully created user with UserID: ", user.Id)
+	return err
+}
+
+func (uch *UserClientHandler) GetUser(userID uint64) (*proto.User, error) {
+
+	user, err := uch.cc.GetUser(context.TODO(), &proto.UserID{Id: userID})
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (uch *UserClientHandler) UpdateUser(user *proto.User) error {
+	if user == nil {
+		return fmt.Errorf("updating user can't be nil")
+	}
+	_, err := uch.cc.UpdateUser(context.TODO(), user)
+	if err != nil {
+		return err
+	}
+	log.Println("successfully updated user")
+	return nil
+}
+
+func (uch *UserClientHandler) DeleteUser(userId uint64) error {
+	_, err := uch.cc.DeleteUser(context.TODO(), &proto.UserID{
+		Id: userId,
+	})
+	return err
 }
 
 func protoToModel(user *proto.User) *models.User {
 	return &models.User{
-		ID:   (*models.UserID)(pointer.Uint64P(user.Id.GetId())),
+		ID:   (models.UserID)(user.Id.GetId()),
 		Name: user.Name,
 		Age:  user.Age,
 		ContactInfo: models.ContactInfo{
@@ -91,7 +144,7 @@ func protoToModel(user *proto.User) *models.User {
 
 func modelToProto(user *models.User) *proto.User {
 	return &proto.User{
-		Id:            &proto.UserID{Id: uint64(*user.ID)},
+		Id:            &proto.UserID{Id: uint64(user.ID)},
 		Name:          user.Name,
 		Age:           user.Age,
 		Email:         user.ContactInfo.Email,

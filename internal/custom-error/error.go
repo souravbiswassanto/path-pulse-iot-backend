@@ -11,7 +11,7 @@ func (e *CustomError) Error() string {
 }
 
 var (
-	ErrKeyNotFound = &CustomError{"key not found"}
+	ErrKeyNotFound = &CustomError{"keys not found"}
 )
 
 func IsKeyNotFoundErr(err error) bool {
