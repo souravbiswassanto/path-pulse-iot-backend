@@ -55,13 +55,13 @@ func (s *Store[K, V]) Get(key K) (V, error) {
 
 func (s *Store[K, V]) Update(key K, value V) {
 	s.mu.Lock()
-	defer s.mu.RUnlock()
+	defer s.mu.Unlock()
 	s.store[key] = value
 }
 
 func (s *Store[K, V]) Delete(key K) {
 	s.mu.Lock()
-	defer s.mu.RUnlock()
+	defer s.mu.Unlock()
 	delete(s.store, key)
 }
 

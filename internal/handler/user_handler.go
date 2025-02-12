@@ -31,14 +31,14 @@ func (ush *UserServerHandlerSer) GetUser(ctx context.Context, uid *proto.UserID)
 	if err != nil {
 		return nil, err
 	}
-	return modelToProto(user), nil
+	return userModelToProto(user), nil
 }
 
 func (ush *UserServerHandlerSer) CreateUser(ctx context.Context, user *proto.User) (*proto.Empty, error) {
 	if user == nil {
 		return &proto.Empty{}, fmt.Errorf("given user is nil")
 	}
-	err := ush.svc.CreateUser(ctx, protoToModel(user))
+	err := ush.svc.CreateUser(ctx, userProtoToModel(user))
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (ush *UserServerHandlerSer) UpdateUser(ctx context.Context, user *proto.Use
 	if user == nil {
 		return nil, fmt.Errorf("upating user can't be nil")
 	}
-	err := ush.svc.UpdateUser(ctx, protoToModel(user))
+	err := ush.svc.UpdateUser(ctx, userProtoToModel(user))
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (uch *UserClientHandler) DeleteUser(userId uint64) error {
 	return err
 }
 
-func protoToModel(user *proto.User) *models.User {
+func userProtoToModel(user *proto.User) *models.User {
 	return &models.User{
 		ID:   (models.UserID)(user.Id.GetId()),
 		Name: user.Name,
@@ -142,7 +142,7 @@ func protoToModel(user *proto.User) *models.User {
 	}
 }
 
-func modelToProto(user *models.User) *proto.User {
+func userModelToProto(user *models.User) *proto.User {
 	return &proto.User{
 		Id:            &proto.UserID{Id: uint64(user.ID)},
 		Name:          user.Name,

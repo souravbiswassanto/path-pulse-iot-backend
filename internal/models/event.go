@@ -11,8 +11,8 @@ const (
 	EventOngoing  EventState = "Ongoing"
 	EventClosed   EventState = "Closed"
 	EventUpcoming EventState = "Upcoming"
-
-	Running EventType = iota
+	EventUnknown  EventState = "Unknown"
+	Running       EventType  = iota
 	Walking
 	Exercise
 	Discussion
@@ -21,16 +21,9 @@ const (
 	Game
 )
 
-type CustomEventType struct {
-	EventType   EventType `json:"event_type,omitempty"`
-	Constraints []string  `json:"constraints,omitempty"`
-}
-
 type EventDescription struct {
-	Name        string          `json:"name,omitempty"`
-	Type        EventType       `json:"type,omitempty"`
-	CType       CustomEventType `json:"c_type,omitempty"`
-	Description string          `json:"description,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 type Event struct {

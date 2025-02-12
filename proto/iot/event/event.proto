@@ -10,6 +10,7 @@ enum EventState {
   ongoing = 0;
   closed = 1;
   upcoming = 2;
+  unknown = 4;
 }
 
 enum EventType {
@@ -22,16 +23,9 @@ enum EventType {
   Game = 6;
 }
 
-message CustomEventType {
-  string eventType = 1;
-  repeated string constraints = 2;
-}
-
 message EventDescription {
   string name = 1;
-  EventType e_type = 2;
-  CustomEventType c_type = 3;
-  string desc = 4;
+  string desc = 2;
 }
 
 message Event {
@@ -41,7 +35,7 @@ message Event {
   EventState state = 4;
   repeated UserID interested = 5;
   repeated UserID going = 6;
-  repeated User notInterested = 7;
+  repeated UserID notInterested = 7;
   EventDescription eventDesc = 8;
   google.type.DateTime event_date_time = 9;
 
