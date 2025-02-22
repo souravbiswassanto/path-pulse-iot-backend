@@ -19,7 +19,6 @@ type User struct {
 	Factors     Factors     `json:"factors,omitempty"`
 	CreatedAt   *string     `json:"created_at,omitempty"`
 	UpdatedAt   *string     `json:"updated_at,omitempty"`
-	Fitness     Fitness
 }
 
 type ContactInfo struct {
@@ -30,14 +29,8 @@ type ContactInfo struct {
 }
 
 type Factors struct {
-	UserID        *UserID       `json:"user_id,omitempty"`
-	Height        float32       `json:"height,omitempty"`
-	Weight        float32       `json:"weight,omitempty"`
-	DiabeticLevel float32       `json:"diabetic_level,omitempty"`
-	BP            BloodPressure `json:"bp,omitempty"`
-}
-
-type Fitness struct {
-	Goal          FitnessGoal `json:"goal,omitempty"`
-	CalorieBurned int32       `json:"calorie_burned,omitempty"`
+	UserID        *UserID `json:"user_id,omitempty"`
+	Height        float32 `json:"height,omitempty"`
+	Weight        float32 `json:"weight,omitempty"`
+	DiabeticLevel float32 `json:"diabetic_level,omitempty"`
 }

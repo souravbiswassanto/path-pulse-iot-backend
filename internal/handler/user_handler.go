@@ -133,10 +133,6 @@ func userProtoToModel(user *proto.User) *models.User {
 			Height:        user.Height,
 			Weight:        user.Weight,
 			DiabeticLevel: user.DiabeticLevel,
-			BP: models.BloodPressure{
-				Systolic:  user.Bp.GetSystolic(),
-				Diastolic: user.Bp.GetDiastolic(),
-			},
 		},
 		Gender: user.Gender.String(),
 	}
@@ -153,10 +149,6 @@ func userModelToProto(user *models.User) *proto.User {
 		Height:        user.Factors.Height,
 		Weight:        user.Factors.Weight,
 		DiabeticLevel: user.Factors.DiabeticLevel,
-		Bp: &proto.BloodPressure{
-			Systolic:  user.Factors.BP.Systolic,
-			Diastolic: user.Factors.BP.Diastolic,
-		},
-		Gender: proto.Gender(proto.Gender_value[user.Gender]),
+		Gender:        proto.Gender(proto.Gender_value[user.Gender]),
 	}
 }
