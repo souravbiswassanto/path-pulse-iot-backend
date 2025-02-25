@@ -27,11 +27,11 @@ type DistanceCovered struct {
 	mu        sync.RWMutex
 }
 
-func NewTrackerService(options *influx.InfluxDBOptions) TrackerService {
+func NewTrackerService(options *influx.InfluxDBOptions) *TrackerService {
 	if options == nil {
 		options = &influx.InfluxDBOptions{}
 	}
-	return TrackerService{
+	return &TrackerService{
 		cb: influx.NewInfluxDbClientBuilder().WithOrg(options.Org).WithToken(options.Token).WithURL(options.Url).WithBucket(options.Bucket),
 	}
 }
@@ -98,7 +98,12 @@ func (ts *TrackerService) UpdateLocation(parent context.Context, position *model
 	}, map[string]interface{}{
 		"Latitude":  position.Latitude,
 		"Longitude": position.Longitude,
-	}, time.Now())
+	}, func() time.Time {
+		if position.Time == nil {
+			return time.Now()
+		}
+		return *position.Time
+	}())
 
 	return writeApi.WritePoint(ctx, p)
 }
@@ -115,7 +120,12 @@ func (ts *TrackerService) Checkpoint(parent context.Context, position *models.Po
 	}, map[string]interface{}{
 		"Latitude":  position.Latitude,
 		"Longitude": position.Longitude,
-	}, time.Now())
+	}, func() time.Time {
+		if position.Time == nil {
+			return time.Now()
+		}
+		return *position.Time
+	}())
 
 	return writeApi.WritePoint(ctx, p)
 }

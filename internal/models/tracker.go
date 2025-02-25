@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type AlertType string
 
 const (
@@ -9,10 +11,11 @@ const (
 )
 
 type Position struct {
-	UID          UserID  `json:"uid,omitempty"`
-	Latitude     float64 `json:"latitude,omitempty"`
-	Longitude    float64 `json:"longitude,omitempty"`
-	CheckPointID uint64  `json:"checkPointId,omitempty"`
+	UID          UserID     `json:"uid,omitempty"`
+	Latitude     float64    `json:"latitude,omitempty"`
+	Longitude    float64    `json:"longitude,omitempty"`
+	Time         *time.Time `json:"time,omitempty"`
+	CheckPointID uint64     `json:"checkPointId,omitempty"`
 }
 
 type PulseRateWithUserID struct {

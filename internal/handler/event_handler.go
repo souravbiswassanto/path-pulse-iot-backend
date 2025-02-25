@@ -107,8 +107,7 @@ func eventProtoToModel(event *event.Event) *models.Event {
 			Name:        event.EventDesc.GetName(),
 		},
 		EventDateTime: func() *time.Time {
-			t := ProtoDateTimeToTime(event.EventDateTime)
-			return &t
+			return ProtoDateTimeToTime(event.EventDateTime)
 		}(),
 	}
 }
@@ -153,17 +152,16 @@ func eventModelToProto(e *models.Event) *event.Event {
 			Desc: e.EventDesc.Description,
 			Name: e.EventDesc.Name,
 		},
-		EventDateTime: TimeToProtoDateTime(*e.EventDateTime),
+		EventDateTime: TimeToProtoDateTime(e.EventDateTime),
 	}
 }
 
-func ProtoDateTimeToTime(dt *datetime.DateTime) time.Time {
+func ProtoDateTimeToTime(dt *datetime.DateTime) *time.Time {
 	if dt == nil {
-		return time.Time{}
+		return nil
 	}
 	nanos := time.Duration(dt.Nanos) * time.Nanosecond
-
-	return time.Date(
+	t := time.Date(
 		int(dt.Year),
 		time.Month(dt.Month),
 		int(dt.Day),
@@ -173,9 +171,13 @@ func ProtoDateTimeToTime(dt *datetime.DateTime) time.Time {
 		int(nanos),
 		time.UTC,
 	)
+	return &t
 }
 
-func TimeToProtoDateTime(t time.Time) *datetime.DateTime {
+func TimeToProtoDateTime(t *time.Time) *datetime.DateTime {
+	if t == nil {
+		return nil
+	}
 	return &datetime.DateTime{
 		Year:    int32(t.Year()),
 		Month:   int32(t.Month()),
