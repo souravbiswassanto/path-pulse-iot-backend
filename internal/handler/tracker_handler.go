@@ -47,43 +47,20 @@ func (th *TrackerHandler) UpdateLocation(stream tracker.Tracker_UpdateLocationSe
 	var wg sync.WaitGroup
 	errChan := make(chan error, workers+1)
 	jobs := make(chan *models.Position, workers+1)
-
+	userDone := make(chan struct{})
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
 		go th.startUpdateLocationWorker(ctx, jobs, errChan, &wg)
 	}
 	go dropPositionFromQueueOnLoad(ctx, jobs, workers)
+	go handleClientPositionUpdate(stream, jobs, userDone, errChan)
 
-	for {
-		position, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			errChan <- err
-			break
-		}
-		if position.UserId == 0 {
-			errChan <- fmt.Errorf("userId 0 not allowed")
-			break
-		}
-		if len(errChan) > 0 {
-			break
-		}
-		jobs <- trackerPositionProtoToModel(position)
-	}
-
+	<-userDone
 	close(jobs)
 	wg.Wait()
 	close(errChan)
-	if len(errChan) > 0 {
-		var err []error
-		for e := range errChan {
-			err = append(err, e)
-		}
-		return errors.Join(err...)
-	}
-	return nil
+
+	return checkForErrors(errChan)
 }
 
 func (th *TrackerHandler) startUpdateLocationWorker(ctx context.Context, job <-chan *models.Position, errChan chan error, wg *sync.WaitGroup) {
@@ -107,6 +84,30 @@ func (th *TrackerHandler) startUpdateLocationWorker(ctx context.Context, job <-c
 	}
 
 }
+
+func handleClientPositionUpdate(stream tracker.Tracker_UpdateLocationServer, jobs chan *models.Position, userDone chan struct{}, errChan chan error) {
+	for {
+		position, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			errChan <- err
+			break
+		}
+		if position.UserId == 0 {
+			errChan <- fmt.Errorf("userId 0 not allowed")
+			break
+		}
+		if len(errChan) > 0 {
+			break
+		}
+		jobs <- trackerPositionProtoToModel(position)
+	}
+	userDone <- struct{}{}
+	return
+}
+
 func dropPositionFromQueueOnLoad(ctx context.Context, job <-chan *models.Position, worker int) {
 	for {
 		select {
@@ -122,6 +123,16 @@ func dropPositionFromQueueOnLoad(ctx context.Context, job <-chan *models.Positio
 			}
 		}
 	}
+}
+func checkForErrors(errChan chan error) error {
+	if len(errChan) > 0 {
+		var err []error
+		for e := range errChan {
+			err = append(err, e)
+		}
+		return errors.Join(err...)
+	}
+	return nil
 }
 
 func trackerPositionModelToProto(pos *models.Position) *tracker.Position {
