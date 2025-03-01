@@ -45,7 +45,7 @@ message Alert {
 service Tracker {
   rpc GetLocation(UserID) returns (Position) {}
   rpc UpdateLocation(stream Position) returns (Empty) {}
-  rpc Checkpoint(Position) returns (Empty) {}
+  rpc Checkpoint(Position) returns (CheckpointID) {}
   rpc UpdatePulseRate(stream PulseRateWithUserId) returns(stream Alert) {}
   rpc GetRealTimeDistanceCovered(stream Position) returns (stream Distance) {}
   rpc GetTotalDistanceBetweenCheckpoint(CheckpointToAndFrom) returns (Distance) {}

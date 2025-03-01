@@ -6,7 +6,6 @@ import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
 	proto "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
-	"gomodules.xyz/pointer"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -115,40 +114,4 @@ func (uch *UserClientHandler) DeleteUser(userId uint64) error {
 		Id: userId,
 	})
 	return err
-}
-
-func userProtoToModel(user *proto.User) *models.User {
-	return &models.User{
-		ID:   (models.UserID)(user.Id.GetId()),
-		Name: user.Name,
-		Age:  user.Age,
-		ContactInfo: models.ContactInfo{
-			UserID:  (*models.UserID)(pointer.Uint64P(user.Id.GetId())),
-			Email:   user.Email,
-			Phone:   user.PhoneNo,
-			Address: user.Address,
-		},
-		Factors: models.Factors{
-			UserID:        (*models.UserID)(pointer.Uint64P(user.Id.GetId())),
-			Height:        user.Height,
-			Weight:        user.Weight,
-			DiabeticLevel: user.DiabeticLevel,
-		},
-		Gender: user.Gender.String(),
-	}
-}
-
-func userModelToProto(user *models.User) *proto.User {
-	return &proto.User{
-		Id:            &proto.UserID{Id: uint64(user.ID)},
-		Name:          user.Name,
-		Age:           user.Age,
-		Email:         user.ContactInfo.Email,
-		PhoneNo:       user.ContactInfo.Phone,
-		Address:       user.ContactInfo.Address,
-		Height:        user.Factors.Height,
-		Weight:        user.Factors.Weight,
-		DiabeticLevel: user.Factors.DiabeticLevel,
-		Gender:        proto.Gender(proto.Gender_value[user.Gender]),
-	}
 }

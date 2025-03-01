@@ -10,39 +10,12 @@ import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker"
 	user "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
 	"io"
-	"runtime"
-	"sync"
 	"time"
 )
 
 type TrackerHandler struct {
 	svc *service.TrackerService
 	tracker.UnimplementedTrackerServer
-}
-
-type WorkerPool struct {
-	*TrackerHandler
-	workers  int
-	wg       *sync.WaitGroup
-	errChan  chan error
-	jobs     chan *models.Position
-	userDone chan struct{}
-}
-
-func NewWorkerPool(th *TrackerHandler) *WorkerPool {
-	cpu := runtime.NumCPU()
-	workers := cpu * 2
-	errChan := make(chan error, workers+1)
-	jobs := make(chan *models.Position, workers+1)
-	userDone := make(chan struct{})
-	return &WorkerPool{
-		TrackerHandler: th,
-		workers:        workers,
-		wg:             &sync.WaitGroup{},
-		jobs:           jobs,
-		userDone:       userDone,
-		errChan:        errChan,
-	}
 }
 
 func NewTrackerHandler(options *influx.InfluxDBOptions) *TrackerHandler {
@@ -154,21 +127,4 @@ func (wp *WorkerPool) checkForErrors() error {
 		return errors.Join(err...)
 	}
 	return nil
-}
-
-func trackerPositionModelToProto(pos *models.Position) *tracker.Position {
-	return &tracker.Position{
-		Longitude: pos.Longitude,
-		Latitude:  pos.Latitude,
-		UserId:    uint64(pos.UID),
-		Time:      TimeToProtoDateTime(pos.Time),
-	}
-}
-func trackerPositionProtoToModel(pos *tracker.Position) *models.Position {
-	return &models.Position{
-		Longitude:    pos.Longitude,
-		Latitude:     pos.Latitude,
-		CheckPointID: pos.CkId,
-		Time:         ProtoDateTimeToTime(pos.Time),
-	}
 }

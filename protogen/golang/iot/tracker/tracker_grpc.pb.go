@@ -25,7 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type TrackerClient interface {
 	GetLocation(ctx context.Context, in *user.UserID, opts ...grpc.CallOption) (*Position, error)
 	UpdateLocation(ctx context.Context, opts ...grpc.CallOption) (Tracker_UpdateLocationClient, error)
-	Checkpoint(ctx context.Context, in *Position, opts ...grpc.CallOption) (*user.Empty, error)
+	Checkpoint(ctx context.Context, in *Position, opts ...grpc.CallOption) (*CheckpointID, error)
 	UpdatePulseRate(ctx context.Context, opts ...grpc.CallOption) (Tracker_UpdatePulseRateClient, error)
 	GetRealTimeDistanceCovered(ctx context.Context, opts ...grpc.CallOption) (Tracker_GetRealTimeDistanceCoveredClient, error)
 	GetTotalDistanceBetweenCheckpoint(ctx context.Context, in *CheckpointToAndFrom, opts ...grpc.CallOption) (*Distance, error)
@@ -82,8 +82,8 @@ func (x *trackerUpdateLocationClient) CloseAndRecv() (*user.Empty, error) {
 	return m, nil
 }
 
-func (c *trackerClient) Checkpoint(ctx context.Context, in *Position, opts ...grpc.CallOption) (*user.Empty, error) {
-	out := new(user.Empty)
+func (c *trackerClient) Checkpoint(ctx context.Context, in *Position, opts ...grpc.CallOption) (*CheckpointID, error) {
+	out := new(CheckpointID)
 	err := c.cc.Invoke(ctx, "/Tracker/Checkpoint", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (c *trackerClient) GetTotalDistanceBetweenCheckpoint(ctx context.Context, i
 type TrackerServer interface {
 	GetLocation(context.Context, *user.UserID) (*Position, error)
 	UpdateLocation(Tracker_UpdateLocationServer) error
-	Checkpoint(context.Context, *Position) (*user.Empty, error)
+	Checkpoint(context.Context, *Position) (*CheckpointID, error)
 	UpdatePulseRate(Tracker_UpdatePulseRateServer) error
 	GetRealTimeDistanceCovered(Tracker_GetRealTimeDistanceCoveredServer) error
 	GetTotalDistanceBetweenCheckpoint(context.Context, *CheckpointToAndFrom) (*Distance, error)
@@ -185,7 +185,7 @@ func (UnimplementedTrackerServer) GetLocation(context.Context, *user.UserID) (*P
 func (UnimplementedTrackerServer) UpdateLocation(Tracker_UpdateLocationServer) error {
 	return status.Errorf(codes.Unimplemented, "method UpdateLocation not implemented")
 }
-func (UnimplementedTrackerServer) Checkpoint(context.Context, *Position) (*user.Empty, error) {
+func (UnimplementedTrackerServer) Checkpoint(context.Context, *Position) (*CheckpointID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Checkpoint not implemented")
 }
 func (UnimplementedTrackerServer) UpdatePulseRate(Tracker_UpdatePulseRateServer) error {
