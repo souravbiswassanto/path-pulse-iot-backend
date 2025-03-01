@@ -20,6 +20,31 @@ type TrackerHandler struct {
 	tracker.UnimplementedTrackerServer
 }
 
+type WorkerPool struct {
+	*TrackerHandler
+	workers  int
+	wg       *sync.WaitGroup
+	errChan  chan error
+	jobs     chan *models.Position
+	userDone chan struct{}
+}
+
+func NewWorkerPool(th *TrackerHandler) *WorkerPool {
+	cpu := runtime.NumCPU()
+	workers := cpu * 2
+	errChan := make(chan error, workers+1)
+	jobs := make(chan *models.Position, workers+1)
+	userDone := make(chan struct{})
+	return &WorkerPool{
+		TrackerHandler: th,
+		workers:        workers,
+		wg:             &sync.WaitGroup{},
+		jobs:           jobs,
+		userDone:       userDone,
+		errChan:        errChan,
+	}
+}
+
 func NewTrackerHandler(options *influx.InfluxDBOptions) *TrackerHandler {
 	return &TrackerHandler{
 		svc: service.NewTrackerService(options),
@@ -40,94 +65,90 @@ func (th *TrackerHandler) GetLocation(ctx context.Context, userID *user.UserID) 
 func (th *TrackerHandler) UpdateLocation(stream tracker.Tracker_UpdateLocationServer) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	cpu := runtime.NumCPU()
-	workers := cpu * 2
-
-	var wg sync.WaitGroup
-	errChan := make(chan error, workers+1)
-	jobs := make(chan *models.Position, workers+1)
-	userDone := make(chan struct{})
-	for i := 0; i < workers; i++ {
-		wg.Add(1)
-		go th.startUpdateLocationWorker(ctx, jobs, errChan, &wg)
+	wp := NewWorkerPool(th)
+	for i := 0; i < wp.workers; i++ {
+		wp.wg.Add(1)
+		go wp.startUpdateLocationWorker(ctx)
 	}
-	go dropPositionFromQueueOnLoad(ctx, jobs, workers)
-	go handleClientPositionUpdate(stream, jobs, userDone, errChan)
-
-	<-userDone
-	close(jobs)
-	wg.Wait()
-	close(errChan)
-
-	return checkForErrors(errChan)
+	go wp.dropPositionFromQueueOnLoad(ctx)
+	go wp.handleClientPositionUpdate(stream)
+	wp.HandleStop()
+	return wp.checkForErrors()
 }
 
-func (th *TrackerHandler) startUpdateLocationWorker(ctx context.Context, job <-chan *models.Position, errChan chan error, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (wp *WorkerPool) startUpdateLocationWorker(ctx context.Context) {
+	defer wp.wg.Done()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case pos, ok := <-job:
-			if len(errChan) > 1 {
+		case pos, ok := <-wp.jobs:
+			if len(wp.errChan) > 1 {
 				return
 			}
 			if !ok {
 				return
 			}
-			err := th.svc.UpdateLocation(ctx, pos)
+			err := wp.svc.UpdateLocation(ctx, pos)
 			if err != nil {
-				errChan <- err
+				wp.errChan <- err
 			}
 		}
 	}
 
 }
 
-func handleClientPositionUpdate(stream tracker.Tracker_UpdateLocationServer, jobs chan *models.Position, userDone chan struct{}, errChan chan error) {
+func (wp *WorkerPool) handleClientPositionUpdate(stream tracker.Tracker_UpdateLocationServer) {
+	defer close(wp.userDone)
 	for {
 		position, err := stream.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			errChan <- err
+			wp.errChan <- err
 			break
 		}
 		if position.UserId == 0 {
-			errChan <- fmt.Errorf("userId 0 not allowed")
+			wp.errChan <- fmt.Errorf("userId 0 not allowed")
 			break
 		}
-		if len(errChan) > 0 {
+		if len(wp.errChan) > 0 {
 			break
 		}
-		jobs <- trackerPositionProtoToModel(position)
+		wp.jobs <- trackerPositionProtoToModel(position)
 	}
-	userDone <- struct{}{}
 	return
 }
 
-func dropPositionFromQueueOnLoad(ctx context.Context, job <-chan *models.Position, worker int) {
+func (wp *WorkerPool) dropPositionFromQueueOnLoad(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(time.Millisecond * 50):
-			if len(job) > worker {
+			if len(wp.jobs) >= wp.workers {
 				// drop a job
 				select {
-				case <-job:
+				case <-wp.jobs:
 				default:
 				}
 			}
 		}
 	}
 }
-func checkForErrors(errChan chan error) error {
-	if len(errChan) > 0 {
+
+func (wp *WorkerPool) HandleStop() {
+	<-wp.userDone
+	close(wp.jobs)
+	wp.wg.Wait()
+	close(wp.errChan)
+}
+
+func (wp *WorkerPool) checkForErrors() error {
+	if len(wp.errChan) > 0 {
 		var err []error
-		for e := range errChan {
+		for e := range wp.errChan {
 			err = append(err, e)
 		}
 		return errors.Join(err...)
