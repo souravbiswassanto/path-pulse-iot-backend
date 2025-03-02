@@ -8,6 +8,7 @@ import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/influx"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"log"
+	"math/rand"
 	"sync"
 	"time"
 )
@@ -108,7 +109,16 @@ func (ts *TrackerService) UpdateLocation(parent context.Context, position *model
 	return writeApi.WritePoint(ctx, p)
 }
 
-func (ts *TrackerService) Checkpoint(parent context.Context, position *models.Position) error {
+func (ts *TrackerService) Checkpoint(parent context.Context, position *models.Position) (uint64, error) {
+	if position == nil {
+		return 0, fmt.Errorf("sent position is nil")
+	}
+	if position.Longitude == 0.0 || position.Latitude == 0.0 {
+		return 0, fmt.Errorf("longitude and latitude not set")
+	}
+	if position.CheckPointID == 0 {
+		position.CheckPointID = rand.Uint64()
+	}
 	c := ts.cb.InfluxDbClient()
 	defer c.Close()
 	ctx, cancel := context.WithTimeout(parent, time.Second*5)
@@ -127,7 +137,7 @@ func (ts *TrackerService) Checkpoint(parent context.Context, position *models.Po
 		return *position.Time
 	}())
 
-	return writeApi.WritePoint(ctx, p)
+	return position.CheckPointID, writeApi.WritePoint(ctx, p)
 }
 
 func (ts *TrackerService) UpdatePulseRate(parent context.Context, pr *models.PulseRateWithUserID) error {

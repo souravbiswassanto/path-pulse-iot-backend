@@ -2,15 +2,12 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/influx"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker"
 	user "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
-	"io"
-	"time"
 )
 
 type TrackerHandler struct {
@@ -41,90 +38,30 @@ func (th *TrackerHandler) UpdateLocation(stream tracker.Tracker_UpdateLocationSe
 	wp := NewWorkerPool(th)
 	for i := 0; i < wp.workers; i++ {
 		wp.wg.Add(1)
-		go wp.startUpdateLocationWorker(ctx)
+		go wp.startUpdateLocationWorker(ctx, func(job interface{}) error {
+			pos := job.(*models.Position)
+			return wp.svc.UpdateLocation(ctx, pos)
+		})
 	}
 	go wp.dropPositionFromQueueOnLoad(ctx)
-	go wp.handleClientPositionUpdate(stream)
+	go wp.handleClientPositionUpdate(func() (interface{}, error) {
+		position, err := stream.Recv()
+		if err != nil {
+			return nil, err
+		}
+		if position.UserId == 0 {
+			return nil, fmt.Errorf("userId 0 not allowed")
+		}
+		return trackerPositionProtoToModel(position), nil
+	})
 	wp.HandleStop()
 	return wp.checkForErrors()
 }
 
-func (wp *WorkerPool) startUpdateLocationWorker(ctx context.Context) {
-	defer wp.wg.Done()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case pos, ok := <-wp.jobs:
-			if len(wp.errChan) > 1 {
-				return
-			}
-			if !ok {
-				return
-			}
-			err := wp.svc.UpdateLocation(ctx, pos)
-			if err != nil {
-				wp.errChan <- err
-			}
-		}
+func (th *TrackerHandler) Checkpoint(ctx context.Context, position *tracker.Position) (*tracker.CheckpointID, error) {
+	ckId, err := th.svc.Checkpoint(ctx, trackerPositionProtoToModel(position))
+	if err != nil {
+		return nil, err
 	}
-
-}
-
-func (wp *WorkerPool) handleClientPositionUpdate(stream tracker.Tracker_UpdateLocationServer) {
-	defer close(wp.userDone)
-	for {
-		position, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			wp.errChan <- err
-			break
-		}
-		if position.UserId == 0 {
-			wp.errChan <- fmt.Errorf("userId 0 not allowed")
-			break
-		}
-		if len(wp.errChan) > 0 {
-			break
-		}
-		wp.jobs <- trackerPositionProtoToModel(position)
-	}
-	return
-}
-
-func (wp *WorkerPool) dropPositionFromQueueOnLoad(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(time.Millisecond * 50):
-			if len(wp.jobs) >= wp.workers {
-				// drop a job
-				select {
-				case <-wp.jobs:
-				default:
-				}
-			}
-		}
-	}
-}
-
-func (wp *WorkerPool) HandleStop() {
-	<-wp.userDone
-	close(wp.jobs)
-	wp.wg.Wait()
-	close(wp.errChan)
-}
-
-func (wp *WorkerPool) checkForErrors() error {
-	if len(wp.errChan) > 0 {
-		var err []error
-		for e := range wp.errChan {
-			err = append(err, e)
-		}
-		return errors.Join(err...)
-	}
-	return nil
+	return &tracker.CheckpointID{CkId: ckId}, nil
 }
