@@ -99,6 +99,13 @@ func alertTypeModelsToProto(at models.AlertType) tracker.AlertType {
 	}
 }
 
+func checkpointToAndFromProtoToModel(ctf *tracker.CheckpointToAndFrom) *models.CheckpointToAndFrom {
+	return &models.CheckpointToAndFrom{
+		To:   ctf.To,
+		From: ctf.From,
+	}
+}
+
 // event | model <--> proto conversion
 
 func eventProtoToModel(event *event.Event) *models.Event {

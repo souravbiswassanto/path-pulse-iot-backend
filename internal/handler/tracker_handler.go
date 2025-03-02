@@ -65,3 +65,11 @@ func (th *TrackerHandler) GetRealTimeDistanceCovered(stream tracker.Tracker_GetR
 	outputStream := th.svc.GetRealTimeDistanceCovered(ctx, inputStream)
 	return HandleClientStream(ctx, NewRealTimeDistanceServerHandler(ctx, th, stream, inputStream, outputStream))
 }
+
+func (th *TrackerHandler) GetTotalDistanceBetweenCheckpoint(ctx context.Context, ctf *tracker.CheckpointToAndFrom) (*tracker.Distance, error) {
+	distance, err := th.svc.GetTotalDistanceBetweenCheckpoint(ctx, checkpointToAndFromProtoToModel(ctf))
+	if err != nil {
+		return nil, err
+	}
+	return &tracker.Distance{Meter: distance}, nil
+}
