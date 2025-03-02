@@ -53,7 +53,7 @@ func HandleClientStream(ctx context.Context, sh StreamHandler, applyFn ...func(w
 		go wp.startWorker()
 	}
 	go wp.dropOnLoad()
-	go wp.handleClientRequest()
+	go wp.receiveClientRequest()
 	wp.handleStop()
 	return wp.checkForErrors()
 }
@@ -77,16 +77,22 @@ func (wp *WorkerPool) startWorker() {
 			val, err := wp.sh.Perform(pos)
 			if err != nil {
 				wp.errChan <- err
+				return
 			}
-			if val != nil {
-				wp.sh.Send(val)
+			if val == nil {
+				continue
+			}
+			err = wp.sh.Send(val)
+			if err != nil {
+				wp.errChan <- err
+				return
 			}
 		}
 	}
 
 }
 
-func (wp *WorkerPool) handleClientRequest() {
+func (wp *WorkerPool) receiveClientRequest() {
 	defer close(wp.userDone)
 	for {
 		position, err := wp.sh.Receive()

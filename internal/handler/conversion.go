@@ -48,7 +48,7 @@ func userModelToProto(user *models.User) *protoUser.User {
 }
 
 // tracker | model <--> proto conversion
-func trackerPositionModelToProto(pos *models.Position) *tracker.Position {
+func positionModelToProto(pos *models.Position) *tracker.Position {
 	return &tracker.Position{
 		Longitude: pos.Longitude,
 		Latitude:  pos.Latitude,
@@ -56,7 +56,7 @@ func trackerPositionModelToProto(pos *models.Position) *tracker.Position {
 		Time:      TimeToProtoDateTime(pos.Time),
 	}
 }
-func trackerPositionProtoToModel(pos *tracker.Position) *models.Position {
+func positionProtoToModel(pos *tracker.Position) *models.Position {
 	return &models.Position{
 		Longitude:    pos.Longitude,
 		Latitude:     pos.Latitude,
@@ -64,6 +64,42 @@ func trackerPositionProtoToModel(pos *tracker.Position) *models.Position {
 		Time:         ProtoDateTimeToTime(pos.Time),
 	}
 }
+
+func pulseRateWithUserIDModelToProto(pr *models.PulseRateWithUserID) *tracker.PulseRateWithUserId {
+	return &tracker.PulseRateWithUserId{
+		UserId:    uint64(pr.UserID),
+		PulseRate: pr.PulseRate,
+	}
+}
+
+func pulseRateWithUserIDProtoToModel(pr *tracker.PulseRateWithUserId) *models.PulseRateWithUserID {
+	return &models.PulseRateWithUserID{
+		UserID:    models.UserID(pr.UserId),
+		PulseRate: pr.PulseRate,
+	}
+}
+
+func alertModelToProto(al *models.Alert) *tracker.Alert {
+	return &tracker.Alert{
+		Alert:  alertTypeModelsToProto(al.Type),
+		Advice: al.Message,
+	}
+}
+
+func alertTypeModelsToProto(at models.AlertType) tracker.AlertType {
+	switch at {
+	case models.Normal:
+		return 0
+	case models.HighPulseRate:
+		return 1
+	case models.LowPulseRate:
+		return 2
+	default:
+		return -1
+	}
+}
+
+// event | model <--> proto conversion
 
 func eventProtoToModel(event *event.Event) *models.Event {
 	return &models.Event{

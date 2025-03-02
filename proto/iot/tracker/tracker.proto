@@ -19,7 +19,7 @@ message CheckpointToAndFrom {
 }
 
 message Distance {
-  float meter = 1;
+  double meter = 1;
 }
 
 message PulseRateWithUserId {

@@ -140,7 +140,7 @@ func (ts *TrackerService) Checkpoint(parent context.Context, position *models.Po
 	return position.CheckPointID, writeApi.WritePoint(ctx, p)
 }
 
-func (ts *TrackerService) UpdatePulseRate(parent context.Context, pr *models.PulseRateWithUserID) error {
+func (ts *TrackerService) UpdatePulseRate(parent context.Context, pr *models.PulseRateWithUserID) (*models.UserID, error) {
 	// improve this client frequent creation
 	c := ts.cb.InfluxDbClient()
 	defer c.Close()
@@ -154,9 +154,9 @@ func (ts *TrackerService) UpdatePulseRate(parent context.Context, pr *models.Pul
 	}, time.Now())
 	err := writeApi.WritePoint(ctx, p)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return err
+	return &pr.UserID, err
 }
 
 func (ts *TrackerService) PulseRateAlert(parent context.Context, UserID *models.UserID) (*models.Alert, error) {
@@ -194,17 +194,20 @@ func (ts *TrackerService) PulseRateAlert(parent context.Context, UserID *models.
 	return alert, nil
 }
 
-func (ts *TrackerService) GetRealTimeDistanceCovered(ctx context.Context, input <-chan *models.Position) <-chan float64 {
-	dc := NewDistanceCovered()
-	output := make(chan float64)
-	go ts.getHaversineDistance(ctx, dc, input, output)
-	return output
+func (ts *TrackerService) AppendDistance(pos *models.Position, input chan<- *models.Position) {
+	input <- pos
 }
 
-func (ts *TrackerService) getHaversineDistance(ctx context.Context, dc *DistanceCovered, input <-chan *models.Position, output chan float64) {
-	ticker := time.NewTicker(time.Second * 10)
-	defer ticker.Stop()
+func (ts *TrackerService) GetRealTimeDistanceCovered(ctx context.Context, inputStream <-chan *models.Position) <-chan float64 {
+	dc := NewDistanceCovered()
+	outputStream := make(chan float64)
+	go ts.getHaversineDistance(ctx, dc, inputStream, outputStream)
+	return outputStream
+}
+
+func (ts *TrackerService) getHaversineDistance(ctx context.Context, dc *DistanceCovered, inputStream <-chan *models.Position, outputStream chan float64) {
 	workStream := make(chan struct{}, 1)
+	// there we can cache previous response obj
 	go func() {
 		for {
 			select {
@@ -215,7 +218,7 @@ func (ts *TrackerService) getHaversineDistance(ctx context.Context, dc *Distance
 				// this is safe I presume, because we only gonna append in the dc.positions. so shared access races
 				distance := dc.positions
 				dc.mu.RUnlock()
-				output <- totalDistance(distance)
+				outputStream <- totalDistance(distance)
 			}
 		}
 	}()
@@ -223,14 +226,11 @@ func (ts *TrackerService) getHaversineDistance(ctx context.Context, dc *Distance
 		select {
 		case <-ctx.Done():
 			return
-		case np := <-input:
+		case np := <-inputStream:
 			dc.mu.Lock()
 			dc.positions = append(dc.positions, np)
 			dc.mu.Unlock()
-		case <-ticker.C:
-			if len(workStream) == 0 {
-				workStream <- struct{}{}
-			}
+			workStream <- struct{}{}
 		}
 	}
 }
