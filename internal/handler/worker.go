@@ -13,37 +13,58 @@ type WorkerWithResult func(interface{}) (interface{}, error)
 type WorkerWithoutResult func(interface{}) error
 
 type WorkerPool struct {
-	*TrackerHandler
+	ctx      context.Context
+	sh       StreamHandler
 	workers  int
 	wg       *sync.WaitGroup
 	errChan  chan error
 	jobs     chan interface{}
 	userDone chan struct{}
+	drop     bool
 }
 
-func NewWorkerPool(th *TrackerHandler) *WorkerPool {
+func NewWorkerPool(ctx context.Context, sh StreamHandler) *WorkerPool {
 	cpu := runtime.NumCPU()
 	workers := cpu * 2
 	errChan := make(chan error, workers+1)
 	jobs := make(chan interface{}, workers+1)
 	userDone := make(chan struct{})
 	return &WorkerPool{
-		TrackerHandler: th,
-		workers:        workers,
-		wg:             &sync.WaitGroup{},
-		jobs:           jobs,
-		userDone:       userDone,
-		errChan:        errChan,
+		ctx:      ctx,
+		sh:       sh,
+		workers:  workers,
+		wg:       &sync.WaitGroup{},
+		jobs:     jobs,
+		userDone: userDone,
+		errChan:  errChan,
+		drop:     true,
 	}
 }
 
+func HandleClientStream(ctx context.Context, sh StreamHandler, applyFn ...func(wp *WorkerPool)) error {
+	myCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	wp := NewWorkerPool(myCtx, sh)
+	for _, fn := range applyFn {
+		fn(wp)
+	}
+	for i := 0; i < wp.workers; i++ {
+		wp.wg.Add(1)
+		go wp.startWorker()
+	}
+	go wp.dropOnLoad()
+	go wp.handleClientRequest()
+	wp.handleStop()
+	return wp.checkForErrors()
+}
+
 // It will receive a function and will call it
-func (wp *WorkerPool) startUpdateLocationWorker(ctx context.Context, fn interface{}) {
+func (wp *WorkerPool) startWorker() {
 	defer wp.wg.Done()
 	// fn func(job interface{}) error
 	for {
 		select {
-		case <-ctx.Done():
+		case <-wp.ctx.Done():
 			return
 		case pos, ok := <-wp.jobs:
 			if len(wp.errChan) > 1 {
@@ -53,24 +74,22 @@ func (wp *WorkerPool) startUpdateLocationWorker(ctx context.Context, fn interfac
 				return
 			}
 			var err error
-			switch fn.(type) {
-			case WorkerWithoutResult:
-				err = fn.(WorkerWithoutResult)(pos)
-			case WorkerWithResult:
-				_, err = fn.(WorkerWithResult)(pos)
-			}
+			val, err := wp.sh.Perform(pos)
 			if err != nil {
 				wp.errChan <- err
+			}
+			if val != nil {
+				wp.sh.Send(val)
 			}
 		}
 	}
 
 }
 
-func (wp *WorkerPool) handleClientPositionUpdate(fn func() (interface{}, error)) {
+func (wp *WorkerPool) handleClientRequest() {
 	defer close(wp.userDone)
 	for {
-		position, err := fn()
+		position, err := wp.sh.Receive()
 		if err == io.EOF {
 			break
 		}
@@ -87,10 +106,10 @@ func (wp *WorkerPool) handleClientPositionUpdate(fn func() (interface{}, error))
 	return
 }
 
-func (wp *WorkerPool) dropPositionFromQueueOnLoad(ctx context.Context) {
+func (wp *WorkerPool) dropOnLoad() {
 	for {
 		select {
-		case <-ctx.Done():
+		case <-wp.ctx.Done():
 			return
 		case <-time.After(time.Millisecond * 50):
 			if len(wp.jobs) >= wp.workers {
@@ -104,7 +123,7 @@ func (wp *WorkerPool) dropPositionFromQueueOnLoad(ctx context.Context) {
 	}
 }
 
-func (wp *WorkerPool) HandleStop() {
+func (wp *WorkerPool) handleStop() {
 	<-wp.userDone
 	close(wp.jobs)
 	wp.wg.Wait()
