@@ -86,6 +86,13 @@ func alertModelToProto(al *models.Alert) *tracker.Alert {
 	}
 }
 
+func alertProtoToModel(al *tracker.Alert) *models.Alert {
+	return &models.Alert{
+		Type:    alertTypeProtoToModel(al.Alert),
+		Message: al.GetAdvice(),
+	}
+}
+
 func alertTypeModelsToProto(at models.AlertType) tracker.AlertType {
 	switch at {
 	case models.Normal:
@@ -96,6 +103,19 @@ func alertTypeModelsToProto(at models.AlertType) tracker.AlertType {
 		return 2
 	default:
 		return -1
+	}
+}
+
+func alertTypeProtoToModel(at tracker.AlertType) models.AlertType {
+	switch at {
+	case tracker.AlertType_Normal:
+		return models.Normal
+	case tracker.AlertType_Increased:
+		return models.HighPulseRate
+	case tracker.AlertType_Decreased:
+		return models.LowPulseRate
+	default:
+		return ""
 	}
 }
 

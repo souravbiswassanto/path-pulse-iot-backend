@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker"
+	"log"
 )
 
 // UpdateLocationServerHandler should be in the same package as tracker_handler.go
@@ -144,4 +145,85 @@ func (cl *currentLocation) Latitude() float64 {
 }
 func (cl *currentLocation) Longitude() float64 {
 	return cl.longitude
+}
+
+// ------ clientLocationStreamHandler
+
+type clientLocationStreamHandler struct {
+	stream tracker.Tracker_UpdateLocationClient
+}
+
+func NewClientLocationStreamHandler(stream tracker.Tracker_UpdateLocationClient) *clientLocationStreamHandler {
+	return &clientLocationStreamHandler{stream: stream}
+}
+
+func (cs *clientLocationStreamHandler) Send(val interface{}) error {
+	pos := val.(*models.Position)
+	if pos.Longitude == 0.0 || pos.Latitude == 0.0 {
+		return fmt.Errorf("longitude latitude can't be nil")
+	}
+	return cs.stream.Send(positionModelToProto(pos))
+}
+
+func (cs *clientLocationStreamHandler) Receive() (interface{}, error) {
+	return nil, nil
+}
+
+func (cs *clientLocationStreamHandler) Perform(interface{}) (interface{}, error) {
+	return nil, nil
+}
+
+// ------ clientLocationStreamHandler
+
+type clientPulseRateStreamHandler struct {
+	stream tracker.Tracker_UpdatePulseRateClient
+}
+
+func NewClientPulseRateStreamHandler(stream tracker.Tracker_UpdatePulseRateClient) *clientPulseRateStreamHandler {
+	return &clientPulseRateStreamHandler{stream: stream}
+}
+
+func (cs *clientPulseRateStreamHandler) Send(val interface{}) error {
+	pr := val.(*models.PulseRateWithUserID)
+	return cs.stream.Send(pulseRateWithUserIDModelToProto(pr))
+}
+
+func (cs *clientPulseRateStreamHandler) Receive() (interface{}, error) {
+	alert, err := cs.stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+	return alertProtoToModel(alert), nil
+}
+
+func (cs *clientPulseRateStreamHandler) Perform(obj interface{}) (interface{}, error) {
+	alert := obj.(*models.Alert)
+	log.Println(alert)
+	return nil, nil
+}
+
+// ------ clientDistanceStreamHandler
+
+type clientDistanceStreamHandler struct {
+	tc     *TrackerHandlerClient
+	stream tracker.Tracker_GetRealTimeDistanceCoveredClient
+}
+
+func (cs *clientDistanceStreamHandler) Send(val interface{}) error {
+	pos := val.(*models.Position)
+	return cs.stream.Send(positionModelToProto(pos))
+}
+
+func (cs *clientDistanceStreamHandler) Receive() (interface{}, error) {
+	distance, err := cs.stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+	return distance.Meter, nil
+}
+
+func (cs *clientDistanceStreamHandler) Perform(obj interface{}) (interface{}, error) {
+	distance := obj.(float64)
+	log.Println("distance covered so far:", distance)
+	return nil, nil
 }

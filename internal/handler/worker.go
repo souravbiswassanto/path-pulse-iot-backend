@@ -146,3 +146,5 @@ func (wp *WorkerPool) checkForErrors() error {
 	}
 	return nil
 }
+
+// -----------------------------
