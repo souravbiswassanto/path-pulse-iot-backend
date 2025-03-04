@@ -7,5 +7,7 @@ type StreamHandler interface {
 }
 
 type Location interface {
-	GetCurrentLocation() (interface{}, error)
+	GetCurrentLocation() (Location, error)
+	Latitude() float64
+	Longitude() float64
 }

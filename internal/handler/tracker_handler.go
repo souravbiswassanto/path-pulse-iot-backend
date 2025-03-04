@@ -104,7 +104,7 @@ func (tc *TrackerHandlerClient) UpdateLocation(ctx context.Context, stream track
 		case <-ticker.C:
 			pos := positionModelToProto(fn())
 			if pos.Longitude == 0.0 || pos.Latitude == 0.0 {
-				return fmt.Errorf("longitude or latitude not set")
+				continue
 			}
 			err := stream.Send(pos)
 			if err != nil {
@@ -114,6 +114,13 @@ func (tc *TrackerHandlerClient) UpdateLocation(ctx context.Context, stream track
 	}
 }
 
-func (tc *TrackerHandlerClient) UpdateLocationHandler() {
-
+func (tc *TrackerHandlerClient) LocationHandler(loc Location) (*models.Position, error) {
+	l, err := loc.GetCurrentLocation()
+	if err != nil {
+		return nil, err
+	}
+	return &models.Position{
+		Latitude:  l.Latitude(),
+		Longitude: l.Longitude(),
+	}, nil
 }

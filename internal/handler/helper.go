@@ -130,11 +130,18 @@ type currentLocation struct {
 	latitude, longitude float64
 }
 
-func (cl currentLocation) GetCurrentLocation() (interface{}, error) {
+func (cl *currentLocation) GetCurrentLocation() (interface{}, error) {
 	// will implement location getting function here
 
-	return currentLocation{
+	return &currentLocation{
 		latitude:  0.0,
 		longitude: 0.0,
 	}, nil
+}
+
+func (cl *currentLocation) Latitude() float64 {
+	return cl.latitude
+}
+func (cl *currentLocation) Longitude() float64 {
+	return cl.longitude
 }
