@@ -9,16 +9,16 @@ import (
 
 // UpdateLocationServerHandler should be in the same package as tracker_handler.go
 type UpdateLocationServerHandler struct {
-	*TrackerHandler
+	*TrackerHandlerServer
 	ctx    context.Context
 	stream tracker.Tracker_UpdateLocationServer
 }
 
-func NewUpdateLocationStreamHandler(ctx context.Context, th *TrackerHandler, stream tracker.Tracker_UpdateLocationServer) *UpdateLocationServerHandler {
+func NewUpdateLocationStreamHandler(ctx context.Context, th *TrackerHandlerServer, stream tracker.Tracker_UpdateLocationServer) *UpdateLocationServerHandler {
 	return &UpdateLocationServerHandler{
-		ctx:            ctx,
-		TrackerHandler: th,
-		stream:         stream,
+		ctx:                  ctx,
+		TrackerHandlerServer: th,
+		stream:               stream,
 	}
 }
 
@@ -44,16 +44,16 @@ func (uls *UpdateLocationServerHandler) Send(interface{}) error {
 
 // UpdatePulseRateServerHandler should be in the same package as tracker_handler.go
 type UpdatePulseRateServerHandler struct {
-	*TrackerHandler
+	*TrackerHandlerServer
 	ctx    context.Context
 	stream tracker.Tracker_UpdatePulseRateServer
 }
 
-func NewUpdatePulseRateServerHandler(ctx context.Context, th *TrackerHandler, stream tracker.Tracker_UpdatePulseRateServer) *UpdatePulseRateServerHandler {
+func NewUpdatePulseRateServerHandler(ctx context.Context, th *TrackerHandlerServer, stream tracker.Tracker_UpdatePulseRateServer) *UpdatePulseRateServerHandler {
 	return &UpdatePulseRateServerHandler{
-		ctx:            ctx,
-		TrackerHandler: th,
-		stream:         stream,
+		ctx:                  ctx,
+		TrackerHandlerServer: th,
+		stream:               stream,
 	}
 }
 
@@ -85,20 +85,20 @@ func (uls *UpdatePulseRateServerHandler) Send(val interface{}) error {
 
 // UpdatePulseRateServerHandler should be in the same package as tracker_handler.go
 type RealTimeDistanceServerHandler struct {
-	*TrackerHandler
+	*TrackerHandlerServer
 	ctx          context.Context
 	stream       tracker.Tracker_GetRealTimeDistanceCoveredServer
 	input        chan *models.Position
 	outputStream <-chan float64
 }
 
-func NewRealTimeDistanceServerHandler(ctx context.Context, th *TrackerHandler, stream tracker.Tracker_GetRealTimeDistanceCoveredServer, input chan *models.Position, outputStream <-chan float64) *RealTimeDistanceServerHandler {
+func NewRealTimeDistanceServerHandler(ctx context.Context, th *TrackerHandlerServer, stream tracker.Tracker_GetRealTimeDistanceCoveredServer, input chan *models.Position, outputStream <-chan float64) *RealTimeDistanceServerHandler {
 	return &RealTimeDistanceServerHandler{
-		ctx:            ctx,
-		TrackerHandler: th,
-		stream:         stream,
-		input:          input,
-		outputStream:   outputStream,
+		ctx:                  ctx,
+		TrackerHandlerServer: th,
+		stream:               stream,
+		input:                input,
+		outputStream:         outputStream,
 	}
 }
 
@@ -124,4 +124,17 @@ func (uls *RealTimeDistanceServerHandler) Send(_ interface{}) error {
 	return uls.stream.Send(&tracker.Distance{
 		Meter: distance,
 	})
+}
+
+type currentLocation struct {
+	latitude, longitude float64
+}
+
+func (cl currentLocation) GetCurrentLocation() (interface{}, error) {
+	// will implement location getting function here
+
+	return currentLocation{
+		latitude:  0.0,
+		longitude: 0.0,
+	}, nil
 }

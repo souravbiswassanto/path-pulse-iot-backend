@@ -8,20 +8,23 @@ import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
+	"google.golang.org/grpc"
+	"log"
+	"time"
 )
 
-type TrackerHandler struct {
+type TrackerHandlerServer struct {
 	svc *service.TrackerService
 	tracker.UnimplementedTrackerServer
 }
 
-func NewTrackerHandler(options *influx.InfluxDBOptions) *TrackerHandler {
-	return &TrackerHandler{
+func NewTrackerHandlerServer(options *influx.InfluxDBOptions) *TrackerHandlerServer {
+	return &TrackerHandlerServer{
 		svc: service.NewTrackerService(options),
 	}
 }
 
-func (th *TrackerHandler) GetLocation(ctx context.Context, userID *user.UserID) (*tracker.Position, error) {
+func (th *TrackerHandlerServer) GetLocation(ctx context.Context, userID *user.UserID) (*tracker.Position, error) {
 	if userID == nil || userID.Id == 0 {
 		return nil, fmt.Errorf("userId not given")
 	}
@@ -32,7 +35,7 @@ func (th *TrackerHandler) GetLocation(ctx context.Context, userID *user.UserID) 
 	return positionModelToProto(position), nil
 }
 
-func (th *TrackerHandler) UpdateLocation(stream tracker.Tracker_UpdateLocationServer) error {
+func (th *TrackerHandlerServer) UpdateLocation(stream tracker.Tracker_UpdateLocationServer) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	b := func(wp *WorkerPool) {
@@ -41,7 +44,7 @@ func (th *TrackerHandler) UpdateLocation(stream tracker.Tracker_UpdateLocationSe
 	return HandleClientStream(ctx, NewUpdateLocationStreamHandler(ctx, th, stream), b)
 }
 
-func (th *TrackerHandler) Checkpoint(ctx context.Context, position *tracker.Position) (*tracker.CheckpointID, error) {
+func (th *TrackerHandlerServer) Checkpoint(ctx context.Context, position *tracker.Position) (*tracker.CheckpointID, error) {
 	ckId, err := th.svc.Checkpoint(ctx, positionProtoToModel(position))
 	if err != nil {
 		return nil, err
@@ -49,7 +52,7 @@ func (th *TrackerHandler) Checkpoint(ctx context.Context, position *tracker.Posi
 	return &tracker.CheckpointID{CkId: ckId}, nil
 }
 
-func (th *TrackerHandler) UpdatePulseRate(stream tracker.Tracker_UpdatePulseRateServer) error {
+func (th *TrackerHandlerServer) UpdatePulseRate(stream tracker.Tracker_UpdatePulseRateServer) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	b := func(wp *WorkerPool) {
@@ -58,7 +61,7 @@ func (th *TrackerHandler) UpdatePulseRate(stream tracker.Tracker_UpdatePulseRate
 	return HandleClientStream(ctx, NewUpdatePulseRateServerHandler(ctx, th, stream), b)
 }
 
-func (th *TrackerHandler) GetRealTimeDistanceCovered(stream tracker.Tracker_GetRealTimeDistanceCoveredServer) error {
+func (th *TrackerHandlerServer) GetRealTimeDistanceCovered(stream tracker.Tracker_GetRealTimeDistanceCoveredServer) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	inputStream := make(chan *models.Position)
@@ -66,10 +69,51 @@ func (th *TrackerHandler) GetRealTimeDistanceCovered(stream tracker.Tracker_GetR
 	return HandleClientStream(ctx, NewRealTimeDistanceServerHandler(ctx, th, stream, inputStream, outputStream))
 }
 
-func (th *TrackerHandler) GetTotalDistanceBetweenCheckpoint(ctx context.Context, ctf *tracker.CheckpointToAndFrom) (*tracker.Distance, error) {
+func (th *TrackerHandlerServer) GetTotalDistanceBetweenCheckpoint(ctx context.Context, ctf *tracker.CheckpointToAndFrom) (*tracker.Distance, error) {
 	distance, err := th.svc.GetTotalDistanceBetweenCheckpoint(ctx, checkpointToAndFromProtoToModel(ctf))
 	if err != nil {
 		return nil, err
 	}
 	return &tracker.Distance{Meter: distance}, nil
+}
+
+// ----------- Client ----------------
+
+type TrackerHandlerClient struct {
+	cc tracker.TrackerClient
+}
+
+func NewTrackerHandlerClient(cc grpc.ClientConnInterface) *TrackerHandlerClient {
+	return &TrackerHandlerClient{
+		cc: tracker.NewTrackerClient(cc),
+	}
+}
+
+func (tc *TrackerHandlerClient) UpdateLocation(ctx context.Context, stream tracker.Tracker_UpdateLocationClient, updateInterval time.Duration, fn func() *models.Position) error {
+	defer func() {
+		err := stream.CloseSend()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}()
+	ticker := time.NewTicker(updateInterval)
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			pos := positionModelToProto(fn())
+			if pos.Longitude == 0.0 || pos.Latitude == 0.0 {
+				return fmt.Errorf("longitude or latitude not set")
+			}
+			err := stream.Send(pos)
+			if err != nil {
+				return err
+			}
+		}
+	}
+}
+
+func (tc *TrackerHandlerClient) UpdateLocationHandler() {
+
 }

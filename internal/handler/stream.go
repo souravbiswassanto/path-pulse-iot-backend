@@ -5,3 +5,7 @@ type StreamHandler interface {
 	Perform(interface{}) (interface{}, error)
 	Send(interface{}) error
 }
+
+type Location interface {
+	GetCurrentLocation() (interface{}, error)
+}
