@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	errors2 "errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/influx"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
@@ -83,15 +85,11 @@ func (th *TrackerHandlerServer) GetTotalDistanceBetweenCheckpoint(ctx context.Co
 
 type TrackerHandlerClient struct {
 	cc tracker.TrackerClient
-	lp LocationProvider
-	pr PulseRateProvider
 }
 
-func NewTrackerHandlerClient(cc grpc.ClientConnInterface, lp LocationProvider, pr PulseRateProvider) *TrackerHandlerClient {
+func NewTrackerHandlerClient(cc grpc.ClientConnInterface) *TrackerHandlerClient {
 	return &TrackerHandlerClient{
 		cc: tracker.NewTrackerClient(cc),
-		lp: lp,
-		pr: pr,
 	}
 }
 
@@ -100,10 +98,10 @@ func (tc *TrackerHandlerClient) HandleLocationUpdate(ctx context.Context, data <
 	if err != nil {
 		return err
 	}
-	return tc.UpdateLocation(ctx, stream, data, updateInterval)
+	return UpdateLocation(ctx, stream, data, updateInterval)
 }
 
-func (tc *TrackerHandlerClient) UpdateLocation(ctx context.Context, stream tracker.Tracker_UpdateLocationClient, data <-chan interface{}, updateInterval time.Duration) error {
+func UpdateLocation(ctx context.Context, stream tracker.Tracker_UpdateLocationClient, data <-chan interface{}, updateInterval time.Duration) error {
 	defer func() {
 		endErr := stream.CloseSend()
 		if endErr != nil {
@@ -113,62 +111,85 @@ func (tc *TrackerHandlerClient) UpdateLocation(ctx context.Context, stream track
 	return HandleClientSend(ctx, NewClientLocationStreamHandler(stream), data, updateInterval)
 }
 
-func (tc *TrackerHandlerClient) CurrentLocation() (*models.Position, error) {
-	l, err := tc.lp.GetCurrentLocation()
-	if err != nil {
-		return nil, err
-	}
-	return &models.Position{
-		Latitude:  l.Latitude(),
-		Longitude: l.Longitude(),
-	}, nil
-}
-
 func (tc *TrackerHandlerClient) HandlePulseRate(ctx context.Context, data <-chan interface{}, updateInterval time.Duration) error {
 	stream, err := tc.cc.UpdatePulseRate(ctx)
 	if err != nil {
 		return err
 	}
-
-	return tc.HandlePulseRateStream(ctx, stream, data, updateInterval)
+	return HandlePulseRateStream(ctx, stream, data, updateInterval)
 }
 
 // TODO: fix this function
-func (tc *TrackerHandlerClient) HandlePulseRateStream(ctx context.Context, stream tracker.Tracker_UpdatePulseRateClient, data <-chan interface{}, updateInterval time.Duration) error {
+func HandlePulseRateStream(ctx context.Context, stream tracker.Tracker_UpdatePulseRateClient, data <-chan interface{}, updateInterval time.Duration) error {
 	var wg sync.WaitGroup
+
 	wg.Add(2)
-	go tc.HandlePulseRateUpdate(ctx, stream, data, &wg, updateInterval)
-	go tc.HandlePulseRateAlert(ctx, stream, &wg)
+	var updateErr, alertErr chan error
+	go HandlePulseRateUpdate(ctx, stream, data, &wg, updateErr, updateInterval)
+	go HandlePulseRateAlert(ctx, stream, &wg, alertErr)
+	err := HandleSendAndRecvError(updateErr, alertErr, models.PulseRateWithUserID{}, models.Alert{})
 	wg.Wait()
+	return err
+}
+
+func HandleSendAndRecvError(sendChan, recvChan chan error, sendItem, recvItem interface{}) error {
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	var sendErr, recvErr error
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		e := <-sendChan
+		mu.Lock()
+		defer mu.Unlock()
+		if e != nil {
+			sendErr = e
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		e := <-recvChan
+		mu.Lock()
+		defer mu.Unlock()
+		if e != nil {
+			recvErr = e
+		}
+	}()
+	wg.Wait()
+	if sendErr != nil && recvErr != nil {
+		return errors.Wrap(errors2.Join(sendErr, recvErr), "failed on both send and receive")
+	} else if sendErr != nil {
+		return errors.Wrap(sendErr, fmt.Sprintf("failed on sending %v", sendItem))
+	} else if recvErr != nil {
+		return errors.Wrap(recvErr, fmt.Sprintf("failed on reciving %v", recvItem))
+	}
 	return nil
 }
 
-func (tc *TrackerHandlerClient) HandlePulseRateUpdate(ctx context.Context, stream tracker.Tracker_UpdatePulseRateClient, data <-chan interface{}, wg *sync.WaitGroup, updateInterval time.Duration) error {
+func HandlePulseRateUpdate(ctx context.Context, stream tracker.Tracker_UpdatePulseRateClient, data <-chan interface{}, wg *sync.WaitGroup, errChan chan error, updateInterval time.Duration) {
 	defer func() {
 		wg.Done()
 		endErr := stream.CloseSend()
 		if endErr != nil {
 			log.Fatalln(endErr)
 		}
+		close(errChan)
 	}()
-	return HandleClientSend(ctx, NewClientPulseRateStreamHandler(stream), data, updateInterval)
-}
-
-func (tc *TrackerHandlerClient) HandlePulseRateAlert(ctx context.Context, stream tracker.Tracker_UpdatePulseRateClient, wg *sync.WaitGroup) error {
-	defer wg.Done()
-	return HandleClientReceive(ctx, NewClientPulseRateStreamHandler(stream))
-}
-
-func (tc *TrackerHandlerClient) UpdatePulseRate() {
-
-}
-
-func (tc *TrackerHandlerClient) CurrentPulseRate() (float32, error) {
-	pr, err := tc.pr.GetCurrentPulseRate()
+	err := HandleClientSend(ctx, NewClientPulseRateStreamHandler(stream), data, updateInterval)
 	if err != nil {
-		return 0.0, err
+		errChan <- errors.Wrap(fmt.Errorf("failed to handle client send for pulse rate update"), err.Error())
 	}
-	return pr.Pulse(), nil
+}
+
+func HandlePulseRateAlert(ctx context.Context, stream tracker.Tracker_UpdatePulseRateClient, wg *sync.WaitGroup, errChan chan error) {
+	defer func() {
+		close(errChan)
+		wg.Done()
+	}()
+	err := HandleClientReceive(ctx, NewClientPulseRateStreamHandler(stream))
+	if err != nil {
+		errChan <- errors.Wrap(fmt.Errorf("failed to handle client receive for alert"), err.Error())
+	}
 }
 
 func HandleClientSend(ctx context.Context, st StreamHandler, data <-chan interface{}, updateInterval time.Duration) error {

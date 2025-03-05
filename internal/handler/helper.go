@@ -160,7 +160,7 @@ func NewClientLocationStreamHandler(stream tracker.Tracker_UpdateLocationClient)
 func (cs *clientLocationStreamHandler) Send(val interface{}) error {
 	pos := val.(*models.Position)
 	if pos.Longitude == 0.0 || pos.Latitude == 0.0 {
-		return fmt.Errorf("longitude latitude can't be nil")
+		return fmt.Errorf("longitude latitude can't be 0.0")
 	}
 	return cs.stream.Send(positionModelToProto(pos))
 }
