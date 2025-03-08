@@ -7,6 +7,7 @@ toolchain go1.22.10
 require (
 	github.com/golang/protobuf v1.5.4
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
+	github.com/lib/pq v1.10.9
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.1
 	gomodules.xyz/pointer v0.1.0
