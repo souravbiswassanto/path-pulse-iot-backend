@@ -1,9 +1,11 @@
 package db
 
-type DB[K comparable, V any] interface {
-	Create(K, V) error
-	Update(K, V) error
-	Delete(K) error
-	Get(K) (V, error)
-	List() (DB[K, V], error)
+import "context"
+
+type DB interface {
+	Create(ctx context.Context, v interface{}) error
+	Update(ctx context.Context, v interface{}) error
+	Delete(ctx context.Context, v interface{}) error
+	Get(ctx context.Context, v interface{}) (interface{}, error)
+	List(filters ...interface{}) ([]interface{}, error)
 }

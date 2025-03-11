@@ -1,24 +1,73 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"time"
+	"xorm.io/xorm"
 )
 
-type PostgresClient struct {
-	*sql.DB
+type Postgres struct {
+	*PostgresClient
 }
 
-func NewPostgresClient(connstr string) (*PostgresClient, error) {
-	db, err := sql.Open("postgres", connstr)
+func NewPostgres() *Postgres {
+	return &Postgres{}
+}
+
+type PostgresClient struct {
+	ctx context.Context
+	*Connector
+	db                 *sql.DB
+	xc                 *xorm.Engine
+	maxIdleConnections *int
+	maxOpenConnections *int
+	connMaxLifeTime    *time.Duration
+}
+
+// GetPostgresXormClient Creates a xorm client, returns a cancel func
+func (c *PostgresClient) GetPostgresXormClient() (*PostgresClient, func(), error) {
+	if c.ctx == nil {
+		c.ctx = context.Background()
+	}
+	connector := c.BuildConnectionString()
+
+	engine, err := xorm.NewEngine("postgres", connector)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to generate postgres client using connection string: %v", err)
+	}
+	_, err = engine.Query("SELECT 1")
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to run query: %v", err)
+	}
+	engine.SetDefaultContext(c.ctx)
+	// https://xorm.io/docs/chapter-01/readme/#connections-pool
+	if c.maxIdleConnections != nil {
+		engine.SetMaxIdleConns(*c.maxIdleConnections)
+	}
+	if c.maxOpenConnections != nil {
+		engine.SetMaxOpenConns(*c.maxOpenConnections)
+	}
+	if c.connMaxLifeTime != nil {
+		engine.SetConnMaxLifetime(*c.connMaxLifeTime)
+	}
+	return &PostgresClient{xc: engine}, func() {
+		_ = engine.Close()
+	}, nil
+}
+
+func (c *Connector) NewPostgresSQLClient() (*PostgresClient, error) {
+	db, err := sql.Open("postgres", c.BuildConnectionString())
 	if err != nil {
 		return nil, err
 	}
-	return &PostgresClient{db}, nil
+	return &PostgresClient{db: db}, nil
 }
 
 type Connector struct {
+	ctx        context.Context
 	port       *int
 	host       *string
 	sslMode    *string
@@ -30,9 +79,6 @@ type Connector struct {
 	clientKey  *string
 }
 
-func NewPostgresConnector() *Connector {
-	return &Connector{}
-}
 func (c *Connector) WithPort(port int) *Connector {
 	*c.port = port
 	return c
@@ -67,6 +113,10 @@ func (c *Connector) WithClientCert(cert string) *Connector {
 }
 func (c *Connector) WithClientKey(key string) *Connector {
 	*c.clientKey = key
+	return c
+}
+func (c *Connector) WithContext(ctx context.Context) *Connector {
+	c.ctx = ctx
 	return c
 }
 func (c *Connector) BuildConnectionString() string {

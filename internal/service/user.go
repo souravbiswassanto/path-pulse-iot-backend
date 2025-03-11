@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	ce "github.com/souravbiswassanto/path-pulse-iot-backend/internal/custom-error"
+	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/in_memory"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 )
@@ -12,7 +13,24 @@ type UserService struct {
 	userDb in_memory.UserStore[models.UserID, *models.User]
 }
 
+type US struct {
+	db db.DB
+}
+
+func (us *US) CreateUser() {
+	return us.db.Create()
+}
+
+type sql struct {
+}
+
+func (a *sql) Create(ctx context.Context, v interface{}) error {}
+
+type inmem struct {
+}
+
 func NewUserService() *UserService {
+	// eikhane db type ta lagbe
 	userDb := in_memory.NewUserStore[models.UserID, *models.User]()
 	id := uint64(1)
 	userDb.Create((models.UserID)(id), &models.User{

@@ -11,9 +11,15 @@ func (e *CustomError) Error() string {
 }
 
 var (
-	ErrKeyNotFound = &CustomError{"keys not found"}
+	ErrKeyNotFound       = &CustomError{"keys not found"}
+	ErrUserNotFound      = &CustomError{"User not found"}
+	ErrUserAlreadyExists = &CustomError{"User already exists"}
 )
 
 func IsKeyNotFoundErr(err error) bool {
 	return errors.Is(err, ErrKeyNotFound)
+}
+
+func IsUserNotFoundErr(err error) bool {
+	return errors.Is(err, ErrUserNotFound)
 }

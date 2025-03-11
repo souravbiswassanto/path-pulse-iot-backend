@@ -16,24 +16,6 @@ func NewStore[K comparable, V interface{}]() *Store[K, V] {
 	}
 }
 
-//type InMemoryStore struct {
-//	eventStore      *Store[uint64, models.Event]
-//	groupStore      *Store[uint64, models.Group]
-//	userStore       *Store[uint64, models.User]
-//	checkpointStore *Store[uint64, models.Checkpoint]
-//	positionStore   *Store[*time.Time, models.Position]
-//}
-//
-//func NewInMemoryStore() *InMemoryStore {
-//	return &InMemoryStore{
-//		eventStore:      NewStore[uint64, models.Event](),
-//		groupStore:      NewStore[uint64, models.Group](),
-//		userStore:       NewStore[uint64, models.User](),
-//		checkpointStore: NewStore[uint64, models.Checkpoint](),
-//		positionStore:   NewStore[*time.Time, models.Position](),
-//	}
-//}
-
 func (s *Store[K, V]) Create(key K, value V) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
