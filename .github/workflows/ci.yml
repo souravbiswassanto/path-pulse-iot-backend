@@ -26,7 +26,6 @@ jobs:
           GO_VERSION=$(grep '^go ' go.mod | awk '{ print $2}')
           echo "Extracted Go version: $GO_VERSION"
           echo "version=${GO_VERSION:-1.20}" >> $GITHUB_OUTPUT
-
   build:
     runs-on: ubuntu-latest
     needs: config
@@ -36,11 +35,11 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ needs.config.outputs.version }}
-      - name: Echo Secret
+      - name: Echo Go version
         env:
-          demo_secret: ${{ needs.config.outputs.branch }}
+          go_version: ${{ needs.config.outputs.version }}
         run: |
-          echo "printing $demo_secret"
+          echo "Using Go Version $go_version"
       - name: Build
         run: go build -v ./...
 
