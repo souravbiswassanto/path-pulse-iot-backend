@@ -1,0 +1,71 @@
+name: path-pulse-iot-backend
+
+on:
+  push:
+    tags:
+      - '*.*'
+  pull_request:
+    branches:
+      - main
+      - 'releases/**'
+  issues:
+    types:
+      - opened
+      - labeled
+
+jobs:
+  config:
+    name: Configuration for ci
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.secret-name.outputs.demo_secret }}
+      version: ${{ steps.go-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: demo secret
+        id: secret-name
+        env:
+          demo_secret: ${{ secrets.MY_DEMO_SECRET }}
+        run: echo "demo_secret=${demo_secret:-nothing}">>$GITHUB_OUTPUT
+      - name: Extract Go Version
+        id: go-version
+        run: |
+          GO_VERSION=$(grep '^go ' go.mod | awk '{ print $2}')
+          echo "Extracted Go version: $GO_VERSION"
+          echo "version=${GO_VERSION:-1.20}" >> $GITHUB_OUTPUT
+  build:
+    runs-on: ubuntu-latest
+    needs: config
+    steps:
+      - name: Github Event Details
+        env:
+          event_context: ${{ toJSON(github.event) }}
+        run: echo github.event, "$event_context"
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ needs.config.outputs.version }}
+      - name: Echo Go version
+        env:
+          go_version: ${{ needs.config.outputs.version }}
+        run: |
+          echo "Using Go Version $go_version"
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+  mat:
+    name: matrix job
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - 12
+          - 14
+    steps:
+      - name: echo matrix node
+        env:
+          node: ${{ matrix.node }}
+        run: echo "$node"
