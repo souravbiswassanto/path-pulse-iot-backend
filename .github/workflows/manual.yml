@@ -1,0 +1,29 @@
+name: manual testing
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: Debug Level
+        required: true
+        default: 'info'
+        type: choice
+        options:
+          - debug
+          - info
+          - warning
+      go-version:
+        description: Go Version
+        required: false
+        default: '1.21'
+        type: string
+jobs:
+  build:
+    name: Build the project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Build
+        run: go build -v ./..
