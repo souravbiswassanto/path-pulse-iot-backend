@@ -15,7 +15,8 @@ type EventServerHandler struct {
 
 func NewEventServerHandler() *EventServerHandler {
 	return &EventServerHandler{
-		svc: service.NewEventService(),
+		// TODO: need to fix
+		svc: service.NewEventService(nil, nil),
 	}
 }
 

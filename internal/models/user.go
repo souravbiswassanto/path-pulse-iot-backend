@@ -15,9 +15,9 @@ type User struct {
 	Name      string  `json:"name,omitempty"`
 	Age       int32   `json:"age,omitempty"`
 	Gender    string  `json:"gender,omitempty"`
-	Email     string  `json:"email,omitempty"`
+	Email     string  `json:"email,omitempty" xorm:"unique"`
 	Phone     string  `json:"phone"`
 	Address   string  `json:"address,omitempty"`
-	CreatedAt *string `json:"created_at,omitempty"`
-	UpdatedAt *string `json:"updated_at,omitempty"`
+	CreatedAt *string `json:"created_at,omitempty" xorm:"'created'"`
+	UpdatedAt *string `json:"updated_at,omitempty" xorm:"'updated'"`
 }

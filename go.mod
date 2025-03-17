@@ -10,7 +10,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.1
-	gomodules.xyz/pointer v0.1.0
+	gomodules.xyz/password-generator v0.2.9
 	google.golang.org/genproto v0.0.0-20250106144421-5f5ef82da422
 	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.36.2

@@ -5,7 +5,6 @@ import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/event"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker"
 	protoUser "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
-	"gomodules.xyz/pointer"
 	"google.golang.org/genproto/googleapis/type/datetime"
 	"time"
 )
@@ -16,34 +15,23 @@ func userProtoToModel(user *protoUser.User) *models.User {
 		ID:   (models.UserID)(user.Id.GetId()),
 		Name: user.Name,
 		Age:  user.Age,
-		ContactInfo: models.ContactInfo{
-			UserID:  (*models.UserID)(pointer.Uint64P(user.Id.GetId())),
-			Email:   user.Email,
-			Phone:   user.PhoneNo,
-			Address: user.Address,
-		},
-		Factors: models.Factors{
-			UserID:        (*models.UserID)(pointer.Uint64P(user.Id.GetId())),
-			Height:        user.Height,
-			Weight:        user.Weight,
-			DiabeticLevel: user.DiabeticLevel,
-		},
-		Gender: user.Gender.String(),
+
+		Email:   user.Email,
+		Phone:   user.PhoneNo,
+		Address: user.Address,
+		Gender:  user.Gender.String(),
 	}
 }
 
 func userModelToProto(user *models.User) *protoUser.User {
 	return &protoUser.User{
-		Id:            &protoUser.UserID{Id: uint64(user.ID)},
-		Name:          user.Name,
-		Age:           user.Age,
-		Email:         user.ContactInfo.Email,
-		PhoneNo:       user.ContactInfo.Phone,
-		Address:       user.ContactInfo.Address,
-		Height:        user.Factors.Height,
-		Weight:        user.Factors.Weight,
-		DiabeticLevel: user.Factors.DiabeticLevel,
-		Gender:        protoUser.Gender(protoUser.Gender_value[user.Gender]),
+		Id:      &protoUser.UserID{Id: uint64(user.ID)},
+		Name:    user.Name,
+		Age:     user.Age,
+		Email:   user.Email,
+		PhoneNo: user.Phone,
+		Address: user.Address,
+		Gender:  protoUser.Gender(protoUser.Gender_value[user.Gender]),
 	}
 }
 

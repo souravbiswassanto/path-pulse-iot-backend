@@ -7,5 +7,4 @@ type DB interface {
 	Update(ctx context.Context, v interface{}) error
 	Delete(ctx context.Context, v interface{}) error
 	Get(ctx context.Context, v interface{}) (interface{}, error)
-	List(filters ...interface{}) ([]interface{}, error)
 }

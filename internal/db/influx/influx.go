@@ -66,6 +66,7 @@ func InfluxDBClient() {
 	client.Close()
 }
 
+// this is just a demo query, created this while practicing
 func query() {
 	bucket := "example-bucket"
 	org := "example-org"

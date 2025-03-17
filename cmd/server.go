@@ -21,7 +21,11 @@ var startServerCmd = &cobra.Command{
 
 func NewGrpcServer(addr string) error {
 	svr := grpc.NewServer()
-	user.RegisterUserManagerServer(svr, handler.NewUserServerHandler())
+	h, err := handler.NewUserServerHandler()
+	if err != nil {
+		return err
+	}
+	user.RegisterUserManagerServer(svr, h)
 	lsnr, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err

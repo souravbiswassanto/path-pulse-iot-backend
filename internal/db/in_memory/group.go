@@ -4,6 +4,6 @@ type GroupStore[K comparable, V any] struct {
 	*Store[K, V]
 }
 
-func NewGroupStore[K comparable, V any]() GroupStore[K, V] {
-	return GroupStore[K, V]{NewStore[K, V]()}
+func NewGroupStore[K comparable, V any](s *Store[K, V]) GroupStore[K, V] {
+	return GroupStore[K, V]{s}
 }

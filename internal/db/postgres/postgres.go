@@ -5,26 +5,44 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	passgen "gomodules.xyz/password-generator"
 	"time"
 	"xorm.io/xorm"
 )
 
-type Postgres struct {
-	*PostgresClient
-}
-
-func NewPostgres() *Postgres {
-	return &Postgres{}
-}
-
 type PostgresClient struct {
+	*ClientOptions
+	db *sql.DB
+	xc *xorm.Engine
+}
+
+type ClientOptions struct {
 	ctx context.Context
 	*Connector
-	db                 *sql.DB
-	xc                 *xorm.Engine
-	maxIdleConnections *int
-	maxOpenConnections *int
+	maxIdleConnections int
+	maxOpenConnections int
 	connMaxLifeTime    *time.Duration
+}
+
+func NewPostgresClient(opts ...func(*ClientOptions)) *PostgresClient {
+	co := &ClientOptions{
+		Connector: &Connector{},
+		ctx:       context.TODO(),
+	}
+	co.SetDefaultConnectionPooling()
+	for _, f := range opts {
+		f(co)
+	}
+	return &PostgresClient{
+		ClientOptions: co,
+	}
+}
+
+func (co *ClientOptions) SetDefaultConnectionPooling() {
+	co.maxIdleConnections = 10
+	co.maxOpenConnections = 15
+	t := time.Minute * 30
+	co.connMaxLifeTime = &t
 }
 
 // GetPostgresXormClient Creates a xorm client, returns a cancel func
@@ -44,12 +62,8 @@ func (c *PostgresClient) GetPostgresXormClient() (*PostgresClient, func(), error
 	}
 	engine.SetDefaultContext(c.ctx)
 	// https://xorm.io/docs/chapter-01/readme/#connections-pool
-	if c.maxIdleConnections != nil {
-		engine.SetMaxIdleConns(*c.maxIdleConnections)
-	}
-	if c.maxOpenConnections != nil {
-		engine.SetMaxOpenConns(*c.maxOpenConnections)
-	}
+	engine.SetMaxIdleConns(c.maxIdleConnections)
+	engine.SetMaxOpenConns(c.maxOpenConnections)
 	if c.connMaxLifeTime != nil {
 		engine.SetConnMaxLifetime(*c.connMaxLifeTime)
 	}
@@ -58,7 +72,7 @@ func (c *PostgresClient) GetPostgresXormClient() (*PostgresClient, func(), error
 	}, nil
 }
 
-func (c *Connector) NewPostgresSQLClient() (*PostgresClient, error) {
+func (c *Connector) GetPostgresDBClient() (*PostgresClient, error) {
 	db, err := sql.Open("postgres", c.BuildConnectionString())
 	if err != nil {
 		return nil, err
@@ -128,6 +142,8 @@ func (c *Connector) BuildConnectionString() string {
 	connstr += "user=" + username + " "
 	if c.password != nil {
 		connstr += "password=" + *c.password + " "
+	} else {
+		connstr += "password=" + passgen.Generate(8) + " "
 	}
 	host := "127.0.0.1"
 	if c.host != nil {
