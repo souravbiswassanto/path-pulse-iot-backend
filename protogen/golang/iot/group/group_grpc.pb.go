@@ -26,7 +26,7 @@ type GroupManagerClient interface {
 	CreateGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*user.Empty, error)
 	UpdateGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*user.Empty, error)
 	DeleteGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*user.Empty, error)
-	GetGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*user.Empty, error)
+	GetGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*Group, error)
 	AddUserToGroup(ctx context.Context, in *UserAdd, opts ...grpc.CallOption) (*user.Empty, error)
 }
 
@@ -65,8 +65,8 @@ func (c *groupManagerClient) DeleteGroup(ctx context.Context, in *GroupId, opts 
 	return out, nil
 }
 
-func (c *groupManagerClient) GetGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*user.Empty, error) {
-	out := new(user.Empty)
+func (c *groupManagerClient) GetGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*Group, error) {
+	out := new(Group)
 	err := c.cc.Invoke(ctx, "/GroupManager/GetGroup", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ type GroupManagerServer interface {
 	CreateGroup(context.Context, *Group) (*user.Empty, error)
 	UpdateGroup(context.Context, *Group) (*user.Empty, error)
 	DeleteGroup(context.Context, *GroupId) (*user.Empty, error)
-	GetGroup(context.Context, *GroupId) (*user.Empty, error)
+	GetGroup(context.Context, *GroupId) (*Group, error)
 	AddUserToGroup(context.Context, *UserAdd) (*user.Empty, error)
 	mustEmbedUnimplementedGroupManagerServer()
 }
@@ -108,7 +108,7 @@ func (UnimplementedGroupManagerServer) UpdateGroup(context.Context, *Group) (*us
 func (UnimplementedGroupManagerServer) DeleteGroup(context.Context, *GroupId) (*user.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteGroup not implemented")
 }
-func (UnimplementedGroupManagerServer) GetGroup(context.Context, *GroupId) (*user.Empty, error) {
+func (UnimplementedGroupManagerServer) GetGroup(context.Context, *GroupId) (*Group, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGroup not implemented")
 }
 func (UnimplementedGroupManagerServer) AddUserToGroup(context.Context, *UserAdd) (*user.Empty, error) {

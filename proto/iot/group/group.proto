@@ -22,6 +22,6 @@ service GroupManager {
   rpc CreateGroup(Group) returns (Empty) {}
   rpc UpdateGroup(Group) returns (Empty) {}
   rpc DeleteGroup(GroupId) returns (Empty) {}
-  rpc GetGroup(GroupId) returns (Empty) {}
+  rpc GetGroup(GroupId) returns (Group) {}
   rpc AddUserToGroup(UserAdd) returns (Empty) {}
 }

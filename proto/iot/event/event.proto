@@ -45,7 +45,7 @@ message EventList {
   repeated Event eventList = 1;
 }
 
-message EvenetId {
+message EventId {
   uint64 e_id = 1;
 }
 
@@ -53,8 +53,8 @@ message EvenetId {
 service EventManager {
   rpc AddEvent(Event) returns (Empty) {}
   rpc UpdateEvent(Event) returns (Empty) {}
-  rpc DeleteEvent(EvenetId) returns (Empty) {}
-  rpc GetSingleEventDetails(EvenetId) returns (Event) {}
+  rpc DeleteEvent(EventId) returns (Empty) {}
+  rpc GetSingleEventDetails(EventId) returns (Event) {}
   rpc ListEventsOfSingleUser(UserID) returns (EventList) {}
   rpc ListEventsOfSingleGroup(GroupId) returns (EventList) {}
 }
