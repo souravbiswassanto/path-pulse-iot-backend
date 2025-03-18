@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/event"
+	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/group"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker"
 	protoUser "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
 	"google.golang.org/genproto/googleapis/type/datetime"
@@ -262,4 +263,38 @@ func eventStateModelToProto(e models.EventState) event.EventState {
 		return event.EventState_upcoming
 	}
 	return event.EventState_unknown
+}
+
+// -- group conversion
+
+func groupProtoToModel(g *group.Group) *models.Group {
+	return &models.Group{
+		GID:     g.GId,
+		Name:    g.Name,
+		Members: groupMembersProtoToModel(g.Members),
+	}
+}
+
+func groupMembersProtoToModel(m []*protoUser.UserID) []*models.UserID {
+	u := make([]*models.UserID, 0)
+	for _, v := range m {
+		u = append(u, (*models.UserID)(&v.Id))
+	}
+	return u
+}
+
+func groupModelToProto(g *models.Group) *group.Group {
+	return &group.Group{
+		GId:     g.GID,
+		Name:    g.Name,
+		Members: groupMembersModelToProto(g.Members),
+	}
+}
+
+func groupMembersModelToProto(m []*models.UserID) []*protoUser.UserID {
+	u := make([]*protoUser.UserID, 0)
+	for _, v := range m {
+		u = append(u, &protoUser.UserID{Id: uint64(*v)})
+	}
+	return u
 }

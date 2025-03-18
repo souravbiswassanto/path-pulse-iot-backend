@@ -26,6 +26,7 @@ type GroupManagerClient interface {
 	CreateGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*user.Empty, error)
 	UpdateGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*user.Empty, error)
 	DeleteGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*user.Empty, error)
+	GetGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*user.Empty, error)
 	AddUserToGroup(ctx context.Context, in *UserAdd, opts ...grpc.CallOption) (*user.Empty, error)
 }
 
@@ -64,6 +65,15 @@ func (c *groupManagerClient) DeleteGroup(ctx context.Context, in *GroupId, opts 
 	return out, nil
 }
 
+func (c *groupManagerClient) GetGroup(ctx context.Context, in *GroupId, opts ...grpc.CallOption) (*user.Empty, error) {
+	out := new(user.Empty)
+	err := c.cc.Invoke(ctx, "/GroupManager/GetGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *groupManagerClient) AddUserToGroup(ctx context.Context, in *UserAdd, opts ...grpc.CallOption) (*user.Empty, error) {
 	out := new(user.Empty)
 	err := c.cc.Invoke(ctx, "/GroupManager/AddUserToGroup", in, out, opts...)
@@ -80,6 +90,7 @@ type GroupManagerServer interface {
 	CreateGroup(context.Context, *Group) (*user.Empty, error)
 	UpdateGroup(context.Context, *Group) (*user.Empty, error)
 	DeleteGroup(context.Context, *GroupId) (*user.Empty, error)
+	GetGroup(context.Context, *GroupId) (*user.Empty, error)
 	AddUserToGroup(context.Context, *UserAdd) (*user.Empty, error)
 	mustEmbedUnimplementedGroupManagerServer()
 }
@@ -96,6 +107,9 @@ func (UnimplementedGroupManagerServer) UpdateGroup(context.Context, *Group) (*us
 }
 func (UnimplementedGroupManagerServer) DeleteGroup(context.Context, *GroupId) (*user.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteGroup not implemented")
+}
+func (UnimplementedGroupManagerServer) GetGroup(context.Context, *GroupId) (*user.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGroup not implemented")
 }
 func (UnimplementedGroupManagerServer) AddUserToGroup(context.Context, *UserAdd) (*user.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddUserToGroup not implemented")
@@ -167,6 +181,24 @@ func _GroupManager_DeleteGroup_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GroupManager_GetGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GroupId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupManagerServer).GetGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/GroupManager/GetGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupManagerServer).GetGroup(ctx, req.(*GroupId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GroupManager_AddUserToGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UserAdd)
 	if err := dec(in); err != nil {
@@ -203,6 +235,10 @@ var GroupManager_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteGroup",
 			Handler:    _GroupManager_DeleteGroup_Handler,
+		},
+		{
+			MethodName: "GetGroup",
+			Handler:    _GroupManager_GetGroup_Handler,
 		},
 		{
 			MethodName: "AddUserToGroup",

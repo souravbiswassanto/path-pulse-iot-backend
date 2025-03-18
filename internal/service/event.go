@@ -71,7 +71,7 @@ func (es *EventService) GetSingleEventDetails(ctx context.Context, eventId uint6
 	return event, nil
 }
 
-// TODO: implement later
+//TODO: implement later
 
 func (es *EventService) ListEventsOfSingleUser(_ context.Context, userId uint64) ([]*models.Event, error) {
 	//events := make([]*models.Event, 0)
@@ -81,7 +81,7 @@ func (es *EventService) ListEventsOfSingleUser(_ context.Context, userId uint64)
 	//		events = append(events, event)
 	//	}
 	//}
-	return nil, nil
+	return nil, fmt.Errorf("not implemented")
 }
 
 // TODO: Implement later
@@ -94,5 +94,5 @@ func (es *EventService) ListEventsOfSingleGroup(_ context.Context, groupId uint6
 	//		events = append(events, event)
 	//	}
 	//}
-	return nil, nil
+	return nil, fmt.Errorf("not implemented")
 }
