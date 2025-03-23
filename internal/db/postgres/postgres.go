@@ -6,6 +6,8 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	passgen "gomodules.xyz/password-generator"
+	"os"
+	"strconv"
 	"time"
 	"xorm.io/xorm"
 )
@@ -19,15 +21,15 @@ type PostgresClient struct {
 type ClientOptions struct {
 	ctx context.Context
 	*Connector
-	maxIdleConnections int
-	maxOpenConnections int
-	connMaxLifeTime    *time.Duration
+	MaxIdleConnections int            `yaml:"maxIdleConnections,omitempty"`
+	MaxOpenConnections int            `yaml:"maxOpenConnections,omitempty"`
+	ConnMaxLifeTime    *time.Duration `yaml:"connMaxLifeTime,omitempty"`
 }
 
-func NewPostgresClient(opts ...func(*ClientOptions)) *PostgresClient {
+func NewPostgresClient(ctx context.Context, opts ...func(*ClientOptions)) *PostgresClient {
 	co := &ClientOptions{
 		Connector: &Connector{},
-		ctx:       context.TODO(),
+		ctx:       ctx,
 	}
 	co.SetDefaultConnectionPooling()
 	for _, f := range opts {
@@ -39,10 +41,10 @@ func NewPostgresClient(opts ...func(*ClientOptions)) *PostgresClient {
 }
 
 func (co *ClientOptions) SetDefaultConnectionPooling() {
-	co.maxIdleConnections = 10
-	co.maxOpenConnections = 15
+	co.MaxIdleConnections = 10
+	co.MaxOpenConnections = 15
 	t := time.Minute * 30
-	co.connMaxLifeTime = &t
+	co.ConnMaxLifeTime = &t
 }
 
 // GetPostgresXormClient Creates a xorm client, returns a cancel func
@@ -62,10 +64,10 @@ func (c *PostgresClient) GetPostgresXormClient() (*PostgresClient, func(), error
 	}
 	engine.SetDefaultContext(c.ctx)
 	// https://xorm.io/docs/chapter-01/readme/#connections-pool
-	engine.SetMaxIdleConns(c.maxIdleConnections)
-	engine.SetMaxOpenConns(c.maxOpenConnections)
-	if c.connMaxLifeTime != nil {
-		engine.SetConnMaxLifetime(*c.connMaxLifeTime)
+	engine.SetMaxIdleConns(c.MaxIdleConnections)
+	engine.SetMaxOpenConns(c.MaxOpenConnections)
+	if c.ConnMaxLifeTime != nil {
+		engine.SetConnMaxLifetime(*c.ConnMaxLifeTime)
 	}
 	return &PostgresClient{xc: engine}, func() {
 		_ = engine.Close()
@@ -81,98 +83,121 @@ func (c *Connector) GetPostgresDBClient() (*PostgresClient, error) {
 }
 
 type Connector struct {
-	ctx        context.Context
-	port       *int
-	host       *string
-	sslMode    *string
-	database   *string
-	username   *string
-	password   *string
-	caCert     *string
-	clientCert *string
-	clientKey  *string
+	Port       *int    `yaml:"port,omitempty"`
+	Host       *string `yaml:"host,omitempty"`
+	SSLMode    *string `yaml:"sslmode,omitempty"`
+	Database   *string `yaml:"database,omitempty"`
+	Username   *string `yaml:"username,omitempty"`
+	Password   *string `yaml:"password,omitempty"`
+	CaCert     *string `yaml:"caCert,omitempty"`
+	ClientCert *string `yaml:"clientCert,omitempty"`
+	ClientKey  *string `yaml:"clientKey,omitempty"`
 }
 
 func (c *Connector) WithPort(port int) *Connector {
-	*c.port = port
+	*c.Port = port
 	return c
 }
-func (c *Connector) WithHost(host string) *Connector {
-	*c.host = host
+func (c *Connector) WithHost(Host string) *Connector {
+	*c.Host = Host
 	return c
 }
-func (c *Connector) WithSSLMode(sslMode string) *Connector {
-	*c.sslMode = sslMode
+func (c *Connector) WithSSLMode(SSLMode string) *Connector {
+	*c.SSLMode = SSLMode
 	return c
 }
-func (c *Connector) WithDatabase(database string) *Connector {
-	*c.database = database
+func (c *Connector) WithDatabase(Database string) *Connector {
+	*c.Database = Database
 	return c
 }
-func (c *Connector) WithUserName(username string) *Connector {
-	*c.username = username
+func (c *Connector) WithUserName(Username string) *Connector {
+	*c.Username = Username
 	return c
 }
-func (c *Connector) WithPassword(password string) *Connector {
-	*c.password = password
+func (c *Connector) WithPassword(Password string) *Connector {
+	*c.Password = Password
 	return c
 }
 func (c *Connector) WithCaCert(cert string) *Connector {
-	*c.caCert = cert
+	*c.CaCert = cert
 	return c
 }
 func (c *Connector) WithClientCert(cert string) *Connector {
-	*c.clientCert = cert
+	*c.ClientCert = cert
 	return c
 }
 func (c *Connector) WithClientKey(key string) *Connector {
-	*c.clientKey = key
+	*c.ClientKey = key
 	return c
 }
-func (c *Connector) WithContext(ctx context.Context) *Connector {
-	c.ctx = ctx
-	return c
-}
+
 func (c *Connector) BuildConnectionString() string {
 	connstr := ""
-	username := "postgres"
-	if c.username != nil {
-		username = *c.username
+	Username := "postgres"
+	if c.Username != nil {
+		Username = *c.Username
+	} else if os.Getenv("PGUSER") != "" {
+		Username = os.Getenv("PGUSER")
 	}
-	connstr += "user=" + username + " "
-	if c.password != nil {
-		connstr += "password=" + *c.password + " "
+	connstr += "user=" + Username + " "
+	Password := ""
+	if c.Password != nil {
+		Password = *c.Password
+	} else if os.Getenv("PGPASSWORD") != "" {
+		Password = os.Getenv("PGPASSWORD")
 	} else {
-		connstr += "password=" + passgen.Generate(8) + " "
+		Password = passgen.Generate(8) // Fallback to generated Password
 	}
-	host := "127.0.0.1"
-	if c.host != nil {
-		host = *c.host
+	connstr += "Password=" + Password + " "
+
+	Host := "127.0.0.1"
+	if c.Host != nil {
+		Host = *c.Host
+	} else if os.Getenv("PGHOST") != "" {
+		Host = os.Getenv("PGHOST")
 	}
-	connstr += "host=" + host + " "
-	port := 5432
-	if c.port != nil {
-		port = *c.port
+	connstr += "Host=" + Host + " "
+
+	Port := 5432
+	if c.Port != nil {
+		Port = *c.Port
+	} else if os.Getenv("PGPORT") != "" {
+		Port, _ = strconv.Atoi(os.Getenv("PGPORT")) // Convert string to int
 	}
-	connstr += "port=" + fmt.Sprintf("%d", port) + " "
-	database := "postgres"
-	if c.database != nil {
-		database = *c.database
+	connstr += "Port=" + fmt.Sprintf("%d", Port) + " "
+
+	Database := "postgres"
+	if c.Database != nil {
+		Database = *c.Database
+	} else if os.Getenv("PGDATABASE") != "" {
+		Database = os.Getenv("PGDATABASE")
 	}
-	connstr += "dbname=" + database + " "
-	sslMode := "disable"
-	if c.sslMode != nil {
-		sslMode = *c.sslMode
+	connstr += "dbname=" + Database + " "
+
+	SSLMode := "disable"
+	if c.SSLMode != nil {
+		SSLMode = *c.SSLMode
+	} else if os.Getenv("PGSSLMODE") != "" {
+		SSLMode = os.Getenv("PGSSLMODE")
 	}
-	connstr += "sslmode=" + sslMode + " "
-	if c.caCert != nil {
-		connstr += "sslrootcert==" + *c.caCert + " "
+	connstr += "sslmode=" + SSLMode + " "
+
+	if c.CaCert != nil {
+		connstr += "sslrootcert=" + *c.CaCert + " "
+	} else if os.Getenv("PGSSLROOTCERT") != "" {
+		connstr += "sslrootcert=" + os.Getenv("PGSSLROOTCERT") + " "
 	}
-	if c.clientCert != nil {
-		connstr += "sslcert==" + *c.clientCert + " "
+
+	if c.ClientCert != nil {
+		connstr += "sslcert=" + *c.ClientCert + " "
+	} else if os.Getenv("PGSSLCERT") != "" {
+		connstr += "sslcert=" + os.Getenv("PGSSLCERT") + " "
 	}
-	if c.clientKey != nil {
-		connstr += "sslkey==" + *c.clientKey + " "
+
+	if c.ClientKey != nil {
+		connstr += "sslkey=" + *c.ClientKey + " "
+	} else if os.Getenv("PGSSLKEY") != "" {
+		connstr += "sslkey=" + os.Getenv("PGSSLKEY") + " "
 	}
 	return connstr
 }

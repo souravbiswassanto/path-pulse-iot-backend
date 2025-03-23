@@ -1,0 +1,16 @@
+postgres:
+  database: postgres
+  username: postgres
+  sslmode: disable
+  host: "provide-a-host"
+  port: 5432
+  maxIdleConnections: 10
+  maxOpenConnections: 10
+  connMaxLifeTime: 30s
+influx:
+  url: "url"
+  org: "org"
+  token: "token"
+  bucket: "bucket"
+cache:
+  maxKeyStoreLimit: 100000

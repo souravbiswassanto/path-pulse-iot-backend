@@ -15,10 +15,10 @@ type InfluxDbClientBuilder struct {
 }
 
 type InfluxDBOptions struct {
-	Url    string
-	Org    string
-	Token  string
-	Bucket string
+	Url    string `yaml:"url,omitempty"`
+	Org    string `yaml:"org,omitempty"`
+	Token  string `yaml:"token,omitempty"`
+	Bucket string `yaml:"bucket,omitempty"`
 }
 
 func NewInfluxDbClientBuilder() *InfluxDbClientBuilder {

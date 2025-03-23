@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	custom_error "github.com/souravbiswassanto/path-pulse-iot-backend/internal/custom-error"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
+	custom_error "github.com/souravbiswassanto/path-pulse-iot-backend/pkg/lib"
 )
 
 type GroupSqlDB struct {

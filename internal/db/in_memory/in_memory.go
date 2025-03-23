@@ -2,23 +2,27 @@ package in_memory
 
 import (
 	"context"
-	custom_error "github.com/souravbiswassanto/path-pulse-iot-backend/internal/custom-error"
+	custom_error "github.com/souravbiswassanto/path-pulse-iot-backend/pkg/lib"
 	"sync"
 	"time"
 )
 
 type Store[K comparable, V interface{}] struct {
-	ctx           context.Context
-	store         map[K]V
-	mu            sync.RWMutex
-	maxStoreLimit int
+	ctx   context.Context
+	store map[K]V
+	mu    sync.RWMutex // Here using RWMutex because Read >> Write
+	*StoreOptions
 }
 
-func NewStore[K comparable, V interface{}](ctx context.Context, msl int) *Store[K, V] {
+type StoreOptions struct {
+	MaxKeyStoreLimit int `yaml:"maxKeyStoreLimit,omitempty'"`
+}
+
+func NewStore[K comparable, V interface{}](ctx context.Context, opts *StoreOptions) *Store[K, V] {
 	store := &Store[K, V]{
-		ctx:           ctx,
-		store:         make(map[K]V),
-		maxStoreLimit: msl,
+		ctx:          ctx,
+		store:        make(map[K]V),
+		StoreOptions: opts,
 	}
 	store.CleanOldCaches()
 	return store
@@ -66,7 +70,7 @@ func (s *Store[K, V]) List() map[K]V {
 }
 
 func (s *Store[K, V]) CleanOldCaches() {
-	ticker := time.NewTicker(time.Minute * 10)
+	ticker := time.NewTicker(time.Minute * 5)
 	defer ticker.Stop()
 	cutExtra := 500
 	for {
@@ -74,21 +78,23 @@ func (s *Store[K, V]) CleanOldCaches() {
 		case <-s.ctx.Done():
 			return
 		case <-ticker.C:
-			s.mu.Lock()
+			s.mu.RLock()
 			size := len(s.store)
-			s.mu.Unlock()
-			if size <= s.maxStoreLimit {
+			s.mu.RUnlock()
+			if size <= s.MaxKeyStoreLimit {
 				continue
 			}
 			td := make([]K, 0)
-			s.mu.Lock()
+			s.mu.RLock()
 			for k, _ := range s.store {
-				if size <= max(0, s.maxStoreLimit-cutExtra) {
+				if size <= max(0, s.MaxKeyStoreLimit-cutExtra) {
 					break
 				}
 				td = append(td, k)
 				size--
 			}
+			s.mu.RUnlock()
+			s.mu.Lock()
 			for _, v := range td {
 				delete(s.store, v)
 			}

@@ -3,8 +3,8 @@ package in_memory
 import (
 	"context"
 	"fmt"
-	ce "github.com/souravbiswassanto/path-pulse-iot-backend/internal/custom-error"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
+	ce "github.com/souravbiswassanto/path-pulse-iot-backend/pkg/lib"
 )
 
 type UserInMemoryStore struct {

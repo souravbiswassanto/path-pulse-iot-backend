@@ -3,8 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/in_memory"
-	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/postgres"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
 	proto "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
@@ -17,19 +15,19 @@ type UserServerHandlerSer struct {
 	proto.UnimplementedUserManagerServer
 }
 
-func NewUserServerHandler() (*UserServerHandlerSer, error) {
-	//ctx, cancel := context.WithCancel(context.TODO())
-	//defer cancel()
-	// TODO: need to redesign here
-	sqlDb, err := postgres.NewUseSqlDB(nil)
-	if err != nil {
-		return nil, err
-	}
-	cacheDb := in_memory.NewEventInMemoryStore(nil)
-	svc := service.NewUserService(sqlDb, cacheDb)
+func NewUserServerHandler(svc *service.UserService) *UserServerHandlerSer {
+	////ctx, cancel := context.WithCancel(context.TODO())
+	////defer cancel()
+	//// TODO: need to redesign here
+	//sqlDb, err := postgres.NewUseSqlDB(nil)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//cacheDb := in_memory.NewEventInMemoryStore(nil)
+	//svc := service.NewUserService(sqlDb, cacheDb)
 	return &UserServerHandlerSer{
 		svc: svc,
-	}, nil
+	}
 }
 
 func (ush *UserServerHandlerSer) GetUser(ctx context.Context, uid *proto.UserID) (*proto.User, error) {
