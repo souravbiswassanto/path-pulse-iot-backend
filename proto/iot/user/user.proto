@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user";
 
 import "google/api/datetime.proto";
+import "google/api/annotations.proto";
 
 enum Gender {
   male = 0;
@@ -32,8 +33,26 @@ message User {
 }
 
 service UserManager {
-  rpc GetUser(UserID) returns (User) {}
-  rpc CreateUser(User) returns (Empty) {}
-  rpc UpdateUser(User) returns (Empty) {}
-  rpc DeleteUser(UserID) returns (Empty) {}
+  rpc GetUser(UserID) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/user/{id}"
+    };
+  }
+  rpc CreateUser(User) returns (Empty) {
+    option (google.api.http) = {
+      post: "/v1/user"
+      body: "*"
+    };
+  }
+  rpc UpdateUser(User) returns (Empty) {
+    option (google.api.http) = {
+      put: "/v1/user/{id.id}"
+      body: "*"
+    };
+  }
+  rpc DeleteUser(UserID) returns (Empty) {
+    option (google.api.http) = {
+      delete: "/v1/user/{id}"
+    };
+  }
 }

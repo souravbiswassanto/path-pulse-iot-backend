@@ -65,9 +65,18 @@ func request_EventManager_UpdateEvent_0(ctx context.Context, marshaler runtime.M
 	var (
 		protoReq Event
 		metadata runtime.ServerMetadata
+		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["e_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "e_id")
+	}
+	protoReq.EId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "e_id", err)
 	}
 	msg, err := client.UpdateEvent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -77,9 +86,18 @@ func local_request_EventManager_UpdateEvent_0(ctx context.Context, marshaler run
 	var (
 		protoReq Event
 		metadata runtime.ServerMetadata
+		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["e_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "e_id")
+	}
+	protoReq.EId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "e_id", err)
 	}
 	msg, err := server.UpdateEvent(ctx, &protoReq)
 	return msg, metadata, err
@@ -89,9 +107,16 @@ func request_EventManager_DeleteEvent_0(ctx context.Context, marshaler runtime.M
 	var (
 		protoReq EventId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["e_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "e_id")
+	}
+	protoReq.EId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "e_id", err)
 	}
 	msg, err := client.DeleteEvent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -101,9 +126,15 @@ func local_request_EventManager_DeleteEvent_0(ctx context.Context, marshaler run
 	var (
 		protoReq EventId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["e_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "e_id")
+	}
+	protoReq.EId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "e_id", err)
 	}
 	msg, err := server.DeleteEvent(ctx, &protoReq)
 	return msg, metadata, err
@@ -113,9 +144,16 @@ func request_EventManager_GetSingleEventDetails_0(ctx context.Context, marshaler
 	var (
 		protoReq EventId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["e_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "e_id")
+	}
+	protoReq.EId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "e_id", err)
 	}
 	msg, err := client.GetSingleEventDetails(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -125,9 +163,15 @@ func local_request_EventManager_GetSingleEventDetails_0(ctx context.Context, mar
 	var (
 		protoReq EventId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["e_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "e_id")
+	}
+	protoReq.EId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "e_id", err)
 	}
 	msg, err := server.GetSingleEventDetails(ctx, &protoReq)
 	return msg, metadata, err
@@ -137,9 +181,16 @@ func request_EventManager_ListEventsOfSingleUser_0(ctx context.Context, marshale
 	var (
 		protoReq user.UserID
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+	}
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 	msg, err := client.ListEventsOfSingleUser(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -149,9 +200,15 @@ func local_request_EventManager_ListEventsOfSingleUser_0(ctx context.Context, ma
 	var (
 		protoReq user.UserID
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+	}
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 	msg, err := server.ListEventsOfSingleUser(ctx, &protoReq)
 	return msg, metadata, err
@@ -161,9 +218,16 @@ func request_EventManager_ListEventsOfSingleGroup_0(ctx context.Context, marshal
 	var (
 		protoReq group.GroupId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := client.ListEventsOfSingleGroup(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -173,9 +237,15 @@ func local_request_EventManager_ListEventsOfSingleGroup_0(ctx context.Context, m
 	var (
 		protoReq group.GroupId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := server.ListEventsOfSingleGroup(ctx, &protoReq)
 	return msg, metadata, err
@@ -193,7 +263,7 @@ func RegisterEventManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/AddEvent", runtime.WithHTTPPathPattern("/EventManager/AddEvent"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/AddEvent", runtime.WithHTTPPathPattern("/v1/event"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -207,13 +277,13 @@ func RegisterEventManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_AddEvent_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_UpdateEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_EventManager_UpdateEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/UpdateEvent", runtime.WithHTTPPathPattern("/EventManager/UpdateEvent"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/UpdateEvent", runtime.WithHTTPPathPattern("/v1/event/{e_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -227,13 +297,13 @@ func RegisterEventManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_UpdateEvent_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_DeleteEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodDelete, pattern_EventManager_DeleteEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/DeleteEvent", runtime.WithHTTPPathPattern("/EventManager/DeleteEvent"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/DeleteEvent", runtime.WithHTTPPathPattern("/v1/event/{e_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -247,13 +317,13 @@ func RegisterEventManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_DeleteEvent_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_GetSingleEventDetails_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EventManager_GetSingleEventDetails_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/GetSingleEventDetails", runtime.WithHTTPPathPattern("/EventManager/GetSingleEventDetails"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/GetSingleEventDetails", runtime.WithHTTPPathPattern("/v1/event/{e_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -267,13 +337,13 @@ func RegisterEventManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_GetSingleEventDetails_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_ListEventsOfSingleUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EventManager_ListEventsOfSingleUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleUser", runtime.WithHTTPPathPattern("/EventManager/ListEventsOfSingleUser"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleUser", runtime.WithHTTPPathPattern("/v1/user/{id}/events"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -287,13 +357,13 @@ func RegisterEventManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_ListEventsOfSingleUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_ListEventsOfSingleGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EventManager_ListEventsOfSingleGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleGroup", runtime.WithHTTPPathPattern("/EventManager/ListEventsOfSingleGroup"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}/events"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -351,7 +421,7 @@ func RegisterEventManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/AddEvent", runtime.WithHTTPPathPattern("/EventManager/AddEvent"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/AddEvent", runtime.WithHTTPPathPattern("/v1/event"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -364,11 +434,11 @@ func RegisterEventManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_AddEvent_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_UpdateEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_EventManager_UpdateEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/UpdateEvent", runtime.WithHTTPPathPattern("/EventManager/UpdateEvent"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/UpdateEvent", runtime.WithHTTPPathPattern("/v1/event/{e_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -381,11 +451,11 @@ func RegisterEventManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_UpdateEvent_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_DeleteEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodDelete, pattern_EventManager_DeleteEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/DeleteEvent", runtime.WithHTTPPathPattern("/EventManager/DeleteEvent"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/DeleteEvent", runtime.WithHTTPPathPattern("/v1/event/{e_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -398,11 +468,11 @@ func RegisterEventManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_DeleteEvent_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_GetSingleEventDetails_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EventManager_GetSingleEventDetails_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/GetSingleEventDetails", runtime.WithHTTPPathPattern("/EventManager/GetSingleEventDetails"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/GetSingleEventDetails", runtime.WithHTTPPathPattern("/v1/event/{e_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -415,11 +485,11 @@ func RegisterEventManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_GetSingleEventDetails_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_ListEventsOfSingleUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EventManager_ListEventsOfSingleUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleUser", runtime.WithHTTPPathPattern("/EventManager/ListEventsOfSingleUser"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleUser", runtime.WithHTTPPathPattern("/v1/user/{id}/events"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -432,11 +502,11 @@ func RegisterEventManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_EventManager_ListEventsOfSingleUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_EventManager_ListEventsOfSingleGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EventManager_ListEventsOfSingleGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleGroup", runtime.WithHTTPPathPattern("/EventManager/ListEventsOfSingleGroup"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.EventManager/ListEventsOfSingleGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}/events"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -453,12 +523,12 @@ func RegisterEventManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_EventManager_AddEvent_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"EventManager", "AddEvent"}, ""))
-	pattern_EventManager_UpdateEvent_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"EventManager", "UpdateEvent"}, ""))
-	pattern_EventManager_DeleteEvent_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"EventManager", "DeleteEvent"}, ""))
-	pattern_EventManager_GetSingleEventDetails_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"EventManager", "GetSingleEventDetails"}, ""))
-	pattern_EventManager_ListEventsOfSingleUser_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"EventManager", "ListEventsOfSingleUser"}, ""))
-	pattern_EventManager_ListEventsOfSingleGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"EventManager", "ListEventsOfSingleGroup"}, ""))
+	pattern_EventManager_AddEvent_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "event"}, ""))
+	pattern_EventManager_UpdateEvent_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "event", "e_id"}, ""))
+	pattern_EventManager_DeleteEvent_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "event", "e_id"}, ""))
+	pattern_EventManager_GetSingleEventDetails_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "event", "e_id"}, ""))
+	pattern_EventManager_ListEventsOfSingleUser_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "user", "id", "events"}, ""))
+	pattern_EventManager_ListEventsOfSingleGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "group", "g_id", "events"}, ""))
 )
 
 var (

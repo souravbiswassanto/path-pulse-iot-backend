@@ -63,9 +63,18 @@ func request_GroupManager_UpdateGroup_0(ctx context.Context, marshaler runtime.M
 	var (
 		protoReq Group
 		metadata runtime.ServerMetadata
+		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := client.UpdateGroup(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -75,9 +84,18 @@ func local_request_GroupManager_UpdateGroup_0(ctx context.Context, marshaler run
 	var (
 		protoReq Group
 		metadata runtime.ServerMetadata
+		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := server.UpdateGroup(ctx, &protoReq)
 	return msg, metadata, err
@@ -87,9 +105,16 @@ func request_GroupManager_DeleteGroup_0(ctx context.Context, marshaler runtime.M
 	var (
 		protoReq GroupId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := client.DeleteGroup(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -99,9 +124,15 @@ func local_request_GroupManager_DeleteGroup_0(ctx context.Context, marshaler run
 	var (
 		protoReq GroupId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := server.DeleteGroup(ctx, &protoReq)
 	return msg, metadata, err
@@ -111,9 +142,16 @@ func request_GroupManager_GetGroup_0(ctx context.Context, marshaler runtime.Mars
 	var (
 		protoReq GroupId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := client.GetGroup(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -123,9 +161,15 @@ func local_request_GroupManager_GetGroup_0(ctx context.Context, marshaler runtim
 	var (
 		protoReq GroupId
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["g_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "g_id")
+	}
+	protoReq.GId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "g_id", err)
 	}
 	msg, err := server.GetGroup(ctx, &protoReq)
 	return msg, metadata, err
@@ -135,9 +179,24 @@ func request_GroupManager_AddUserToGroup_0(ctx context.Context, marshaler runtim
 	var (
 		protoReq UserAdd
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["groupId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "groupId")
+	}
+	protoReq.GroupId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "groupId", err)
+	}
+	val, ok = pathParams["userId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "userId")
+	}
+	protoReq.UserId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "userId", err)
 	}
 	msg, err := client.AddUserToGroup(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -147,9 +206,23 @@ func local_request_GroupManager_AddUserToGroup_0(ctx context.Context, marshaler 
 	var (
 		protoReq UserAdd
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["groupId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "groupId")
+	}
+	protoReq.GroupId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "groupId", err)
+	}
+	val, ok = pathParams["userId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "userId")
+	}
+	protoReq.UserId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "userId", err)
 	}
 	msg, err := server.AddUserToGroup(ctx, &protoReq)
 	return msg, metadata, err
@@ -167,7 +240,7 @@ func RegisterGroupManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/CreateGroup", runtime.WithHTTPPathPattern("/GroupManager/CreateGroup"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/CreateGroup", runtime.WithHTTPPathPattern("/v1/group"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -181,13 +254,13 @@ func RegisterGroupManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_GroupManager_CreateGroup_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_GroupManager_UpdateGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_GroupManager_UpdateGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/UpdateGroup", runtime.WithHTTPPathPattern("/GroupManager/UpdateGroup"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/UpdateGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -201,13 +274,13 @@ func RegisterGroupManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_GroupManager_UpdateGroup_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_GroupManager_DeleteGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodDelete, pattern_GroupManager_DeleteGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/DeleteGroup", runtime.WithHTTPPathPattern("/GroupManager/DeleteGroup"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/DeleteGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -221,13 +294,13 @@ func RegisterGroupManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_GroupManager_DeleteGroup_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_GroupManager_GetGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_GroupManager_GetGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/GetGroup", runtime.WithHTTPPathPattern("/GroupManager/GetGroup"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/GetGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -247,7 +320,7 @@ func RegisterGroupManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/AddUserToGroup", runtime.WithHTTPPathPattern("/GroupManager/AddUserToGroup"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.GroupManager/AddUserToGroup", runtime.WithHTTPPathPattern("/v1/group/{groupId}/user/{userId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -305,7 +378,7 @@ func RegisterGroupManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/CreateGroup", runtime.WithHTTPPathPattern("/GroupManager/CreateGroup"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/CreateGroup", runtime.WithHTTPPathPattern("/v1/group"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -318,11 +391,11 @@ func RegisterGroupManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_GroupManager_CreateGroup_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_GroupManager_UpdateGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_GroupManager_UpdateGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/UpdateGroup", runtime.WithHTTPPathPattern("/GroupManager/UpdateGroup"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/UpdateGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -335,11 +408,11 @@ func RegisterGroupManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_GroupManager_UpdateGroup_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_GroupManager_DeleteGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodDelete, pattern_GroupManager_DeleteGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/DeleteGroup", runtime.WithHTTPPathPattern("/GroupManager/DeleteGroup"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/DeleteGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -352,11 +425,11 @@ func RegisterGroupManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_GroupManager_DeleteGroup_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_GroupManager_GetGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_GroupManager_GetGroup_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/GetGroup", runtime.WithHTTPPathPattern("/GroupManager/GetGroup"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/GetGroup", runtime.WithHTTPPathPattern("/v1/group/{g_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -373,7 +446,7 @@ func RegisterGroupManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/AddUserToGroup", runtime.WithHTTPPathPattern("/GroupManager/AddUserToGroup"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.GroupManager/AddUserToGroup", runtime.WithHTTPPathPattern("/v1/group/{groupId}/user/{userId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -390,11 +463,11 @@ func RegisterGroupManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_GroupManager_CreateGroup_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"GroupManager", "CreateGroup"}, ""))
-	pattern_GroupManager_UpdateGroup_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"GroupManager", "UpdateGroup"}, ""))
-	pattern_GroupManager_DeleteGroup_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"GroupManager", "DeleteGroup"}, ""))
-	pattern_GroupManager_GetGroup_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"GroupManager", "GetGroup"}, ""))
-	pattern_GroupManager_AddUserToGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"GroupManager", "AddUserToGroup"}, ""))
+	pattern_GroupManager_CreateGroup_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "group"}, ""))
+	pattern_GroupManager_UpdateGroup_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "group", "g_id"}, ""))
+	pattern_GroupManager_DeleteGroup_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "group", "g_id"}, ""))
+	pattern_GroupManager_GetGroup_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "group", "g_id"}, ""))
+	pattern_GroupManager_AddUserToGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "group", "groupId", "user", "userId"}, ""))
 )
 
 var (

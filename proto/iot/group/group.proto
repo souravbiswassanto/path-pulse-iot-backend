@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/group";
 
 import "iot/user/user.proto";
+import "google/api/annotations.proto";
 
 message GroupId {
   uint64 g_id = 1;
@@ -19,9 +20,31 @@ message UserAdd {
 }
 
 service GroupManager {
-  rpc CreateGroup(Group) returns (Empty) {}
-  rpc UpdateGroup(Group) returns (Empty) {}
-  rpc DeleteGroup(GroupId) returns (Empty) {}
-  rpc GetGroup(GroupId) returns (Group) {}
-  rpc AddUserToGroup(UserAdd) returns (Empty) {}
+  rpc CreateGroup(Group) returns (Empty) {
+    option (google.api.http) = {
+      post: "/v1/group"
+      body: "*"
+    };
+  }
+  rpc UpdateGroup(Group) returns (Empty) {
+    option (google.api.http) = {
+      put: "/v1/group/{g_id}"
+      body: "*"
+    };
+  }
+  rpc DeleteGroup(GroupId) returns (Empty) {
+    option (google.api.http) = {
+      delete: "/v1/group/{g_id}"
+    };
+  }
+  rpc GetGroup(GroupId) returns (Group) {
+    option (google.api.http) = {
+      get: "/v1/group/{g_id}"
+    };
+  }
+  rpc AddUserToGroup(UserAdd) returns (Empty) {
+    option (google.api.http) = {
+      post: "/v1/group/{groupId}/user/{userId}"
+    };
+  }
 }
