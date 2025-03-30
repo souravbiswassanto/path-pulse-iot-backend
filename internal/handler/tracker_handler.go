@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/influx"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/tracker"
@@ -17,9 +16,9 @@ type TrackerHandlerServer struct {
 	tracker.UnimplementedTrackerServer
 }
 
-func NewTrackerHandlerServer(options *influx.InfluxDBOptions) *TrackerHandlerServer {
+func NewTrackerServerHandler(svc *service.TrackerService) *TrackerHandlerServer {
 	return &TrackerHandlerServer{
-		svc: service.NewTrackerService(options),
+		svc: svc,
 	}
 }
 

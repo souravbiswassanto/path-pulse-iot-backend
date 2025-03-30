@@ -22,7 +22,7 @@ func NewUserService(db db.DB, cache db.DB) *UserService {
 	//client := &postgres.PostgresClient{
 	//	ClientOptions: co,
 	//}
-	//db, err := postgres.NewUseSqlDB(client)
+	//db, err := postgres.NewUserSqlDB(client)
 	//if err != nil {
 	//	return nil, err
 	//}

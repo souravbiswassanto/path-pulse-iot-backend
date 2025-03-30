@@ -19,7 +19,7 @@ func NewUserServerHandler(svc *service.UserService) *UserServerHandlerSer {
 	////ctx, cancel := context.WithCancel(context.TODO())
 	////defer cancel()
 	//// TODO: need to redesign here
-	//sqlDb, err := postgres.NewUseSqlDB(nil)
+	//sqlDb, err := postgres.NewUserSqlDB(nil)
 	//if err != nil {
 	//	return nil, err
 	//}

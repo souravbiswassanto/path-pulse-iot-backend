@@ -16,10 +16,9 @@ type GroupServerHandler struct {
 	group.UnimplementedGroupManagerServer
 }
 
-func NewGroupServerHandler() *GroupServerHandler {
+func NewGroupServerHandler(svc *service.GroupService) *GroupServerHandler {
 	return &GroupServerHandler{
-		// TODO: need to fix
-		svc: service.NewGroupService(nil, nil),
+		svc: svc,
 	}
 }
 

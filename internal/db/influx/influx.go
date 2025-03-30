@@ -50,6 +50,8 @@ func (i *InfluxDbClientBuilder) InfluxDbClient() influxdb2.Client {
 
 }
 
+// testing functions
+
 func InfluxDBClient() {
 	bucket := "example-bucket"
 	org := "example-org"

@@ -17,10 +17,9 @@ type EventServerHandler struct {
 	event.UnimplementedEventManagerServer
 }
 
-func NewEventServerHandler() *EventServerHandler {
+func NewEventServerHandler(svc *service.EventService) *EventServerHandler {
 	return &EventServerHandler{
-		// TODO: need to fix
-		svc: service.NewEventService(nil, nil),
+		svc: svc,
 	}
 }
 

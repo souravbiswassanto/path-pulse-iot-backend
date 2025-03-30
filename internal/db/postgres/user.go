@@ -11,7 +11,7 @@ type UserSqlDB struct {
 	*PostgresClient
 }
 
-func NewUseSqlDB(pc *PostgresClient) (*UserSqlDB, error) {
+func NewUserSqlDB(pc *PostgresClient) (*UserSqlDB, error) {
 	if pc == nil || pc.xc == nil {
 		return nil, fmt.Errorf("client can't be nil")
 	}

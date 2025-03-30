@@ -44,6 +44,36 @@ func NewDistanceCovered() *DistanceCovered {
 	}
 }
 
+func (ts *TrackerService) getHaversineDistance(ctx context.Context, dc *DistanceCovered, inputStream <-chan *models.Position, outputStream chan float64) {
+	workStream := make(chan struct{}, 1)
+	// there we can cache previous response obj
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-workStream:
+				dc.mu.RLock()
+				// this is safe I presume, because we only gonna append in the dc.positions. so shared access races
+				distance := dc.positions
+				dc.mu.RUnlock()
+				outputStream <- totalDistance(distance)
+			}
+		}
+	}()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case np := <-inputStream:
+			dc.mu.Lock()
+			dc.positions = append(dc.positions, np)
+			dc.mu.Unlock()
+			workStream <- struct{}{}
+		}
+	}
+}
+
 func (ts *TrackerService) GetLocation(_ context.Context, userID *models.UserID) (*models.Position, error) {
 	c := ts.cb.InfluxDbClient()
 	defer c.Close()
@@ -203,36 +233,6 @@ func (ts *TrackerService) GetRealTimeDistanceCovered(ctx context.Context, inputS
 	outputStream := make(chan float64)
 	go ts.getHaversineDistance(ctx, dc, inputStream, outputStream)
 	return outputStream
-}
-
-func (ts *TrackerService) getHaversineDistance(ctx context.Context, dc *DistanceCovered, inputStream <-chan *models.Position, outputStream chan float64) {
-	workStream := make(chan struct{}, 1)
-	// there we can cache previous response obj
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-workStream:
-				dc.mu.RLock()
-				// this is safe I presume, because we only gonna append in the dc.positions. so shared access races
-				distance := dc.positions
-				dc.mu.RUnlock()
-				outputStream <- totalDistance(distance)
-			}
-		}
-	}()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case np := <-inputStream:
-			dc.mu.Lock()
-			dc.positions = append(dc.positions, np)
-			dc.mu.Unlock()
-			workStream <- struct{}{}
-		}
-	}
 }
 
 func (ts *TrackerService) GetTotalDistanceBetweenCheckpoint(parent context.Context, ck *models.CheckpointToAndFrom) (float64, error) {
