@@ -26,5 +26,4 @@ func NewCmdServer(ctx context.Context) *cobra.Command {
 	}
 	o.AddFlags(cmd.Flags())
 	return cmd
-
 }
