@@ -3,64 +3,80 @@ package service
 import (
 	"context"
 	"fmt"
-	ce "github.com/souravbiswassanto/path-pulse-iot-backend/internal/custom-error"
-	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db/in_memory"
+	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/db"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 )
 
 type UserService struct {
-	userDb in_memory.UserStore[models.UserID, *models.User]
+	db    db.DB
+	cache db.DB
 }
 
-func NewUserService() *UserService {
-	userDb := in_memory.NewUserStore[models.UserID, *models.User]()
-	id := uint64(1)
-	userDb.Create((models.UserID)(id), &models.User{
-		ID: (models.UserID)(id),
-	})
+func NewUserService(db db.DB, cache db.DB) *UserService {
+	//ctx context.Context, maxCacheStoreLimit int, options ...func(*postgres.ClientOptions)
+	//co := &postgres.ClientOptions{}
+	//co.SetDefaultConnectionPooling()
+	//for _, opt := range options {
+	//	opt(co)
+	//}
+	//client := &postgres.PostgresClient{
+	//	ClientOptions: co,
+	//}
+	//db, err := postgres.NewUserSqlDB(client)
+	//if err != nil {
+	//	return nil, err
+	//}
 	return &UserService{
-		userDb: userDb,
+		db:    db,
+		cache: cache,
+		// cache: in_memory.NewUserInMemoryStore(ctx, maxCacheStoreLimit),
 	}
 }
 
-func (us *UserService) CreateUser(_ context.Context, u *models.User) error {
+func (us *UserService) CreateUser(ctx context.Context, u *models.User) error {
 	if u == nil {
 		return fmt.Errorf("user is nil")
 	}
-	_, err := us.userDb.Get(u.ID)
-	if err == nil {
-		return fmt.Errorf("user already exists")
-	}
-	us.userDb.Create(u.ID, u)
-
-	return nil
+	return us.db.Create(ctx, u)
 }
 
 func (us *UserService) UpdateUser(ctx context.Context, u *models.User) error {
 	if u == nil {
-		fmt.Errorf("user is nil")
+		return fmt.Errorf("user is nil")
 	}
-	_, err := us.userDb.Get(u.ID)
-	if err != nil && ce.IsKeyNotFoundErr(err) {
-		return us.CreateUser(ctx, u)
+	err := us.db.Update(ctx, u)
+	if err != nil {
+		return err
 	}
-	us.userDb.Update(u.ID, u)
+	_ = us.cache.Update(ctx, u)
 	return nil
 }
 
-func (us *UserService) DeleteUser(_ context.Context, u models.UserID) error {
-	_, err := us.userDb.Get(u)
-	if err != nil && ce.IsKeyNotFoundErr(err) {
-		return nil
+func (us *UserService) DeleteUser(ctx context.Context, u models.UserID) error {
+	err := us.db.Delete(ctx, u)
+	if err != nil {
+		return err
 	}
-	us.userDb.Delete(u)
+	_ = us.cache.Delete(ctx, u)
 	return nil
 }
 
-func (us *UserService) GetUser(_ context.Context, u models.UserID) (*models.User, error) {
-	k, err := us.userDb.Get(u)
+func (us *UserService) GetUser(ctx context.Context, u models.UserID) (*models.User, error) {
+	v, err := us.cache.Get(ctx, u)
+	if err == nil {
+		user, ok := v.(*models.User)
+		if ok {
+			return user, nil
+		}
+	}
+	k, err := us.db.Get(ctx, u)
 	if err != nil {
 		return nil, err
 	}
-	return k, nil
+	user, ok := k.(*models.User)
+	if !ok {
+		return nil, fmt.Errorf("can't decode user")
+	}
+	_ = us.cache.Create(ctx, user)
+	return user, nil
 }

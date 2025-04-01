@@ -1,38 +1,32 @@
 package in_memory
 
 import (
-	custom_error "github.com/souravbiswassanto/path-pulse-iot-backend/internal/custom-error"
+	"context"
+	custom_error "github.com/souravbiswassanto/path-pulse-iot-backend/pkg/lib"
 	"sync"
+	"time"
 )
 
 type Store[K comparable, V interface{}] struct {
+	ctx   context.Context
 	store map[K]V
-	mu    sync.RWMutex
+	mu    sync.RWMutex // Here using RWMutex because Read >> Write
+	*StoreOptions
 }
 
-func NewStore[K comparable, V interface{}]() *Store[K, V] {
-	return &Store[K, V]{
-		store: make(map[K]V),
+type StoreOptions struct {
+	MaxKeyStoreLimit int `yaml:"maxKeyStoreLimit,omitempty'"`
+}
+
+func NewStore[K comparable, V interface{}](ctx context.Context, opts *StoreOptions) *Store[K, V] {
+	store := &Store[K, V]{
+		ctx:          ctx,
+		store:        make(map[K]V),
+		StoreOptions: opts,
 	}
+	store.CleanOldCaches()
+	return store
 }
-
-//type InMemoryStore struct {
-//	eventStore      *Store[uint64, models.Event]
-//	groupStore      *Store[uint64, models.Group]
-//	userStore       *Store[uint64, models.User]
-//	checkpointStore *Store[uint64, models.Checkpoint]
-//	positionStore   *Store[*time.Time, models.Position]
-//}
-//
-//func NewInMemoryStore() *InMemoryStore {
-//	return &InMemoryStore{
-//		eventStore:      NewStore[uint64, models.Event](),
-//		groupStore:      NewStore[uint64, models.Group](),
-//		userStore:       NewStore[uint64, models.User](),
-//		checkpointStore: NewStore[uint64, models.Checkpoint](),
-//		positionStore:   NewStore[*time.Time, models.Position](),
-//	}
-//}
 
 func (s *Store[K, V]) Create(key K, value V) {
 	s.mu.Lock()
@@ -73,4 +67,38 @@ func (s *Store[K, V]) List() map[K]V {
 		m[k] = v
 	}
 	return m
+}
+
+func (s *Store[K, V]) CleanOldCaches() {
+	ticker := time.NewTicker(time.Minute * 5)
+	defer ticker.Stop()
+	cutExtra := 500
+	for {
+		select {
+		case <-s.ctx.Done():
+			return
+		case <-ticker.C:
+			s.mu.RLock()
+			size := len(s.store)
+			s.mu.RUnlock()
+			if size <= s.MaxKeyStoreLimit {
+				continue
+			}
+			td := make([]K, 0)
+			s.mu.RLock()
+			for k, _ := range s.store {
+				if size <= max(0, s.MaxKeyStoreLimit-cutExtra) {
+					break
+				}
+				td = append(td, k)
+				size--
+			}
+			s.mu.RUnlock()
+			s.mu.Lock()
+			for _, v := range td {
+				delete(s.store, v)
+			}
+			s.mu.Unlock()
+		}
+	}
 }

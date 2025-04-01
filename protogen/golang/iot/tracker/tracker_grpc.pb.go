@@ -25,14 +25,10 @@ const _ = grpc.SupportPackageIsVersion7
 type TrackerClient interface {
 	GetLocation(ctx context.Context, in *user.UserID, opts ...grpc.CallOption) (*Position, error)
 	UpdateLocation(ctx context.Context, opts ...grpc.CallOption) (Tracker_UpdateLocationClient, error)
-	AddCheckPoint(ctx context.Context, in *Checkpoint, opts ...grpc.CallOption) (*user.Empty, error)
-	UpdateCheckpoint(ctx context.Context, in *Checkpoint, opts ...grpc.CallOption) (*user.Empty, error)
-	GetDietaryChart(ctx context.Context, in *user.UserID, opts ...grpc.CallOption) (*user.DietaryChart, error)
-	UpdateBloodPressure(ctx context.Context, in *BloodPressureWithUserId, opts ...grpc.CallOption) (*user.Empty, error)
+	Checkpoint(ctx context.Context, in *Position, opts ...grpc.CallOption) (*CheckpointID, error)
+	UpdatePulseRate(ctx context.Context, opts ...grpc.CallOption) (Tracker_UpdatePulseRateClient, error)
 	GetRealTimeDistanceCovered(ctx context.Context, opts ...grpc.CallOption) (Tracker_GetRealTimeDistanceCoveredClient, error)
-	GetRealTimeCaloriesBurned(ctx context.Context, opts ...grpc.CallOption) (Tracker_GetRealTimeCaloriesBurnedClient, error)
 	GetTotalDistanceBetweenCheckpoint(ctx context.Context, in *CheckpointToAndFrom, opts ...grpc.CallOption) (*Distance, error)
-	GetCalorieBurnedBetweenCheckpoint(ctx context.Context, in *CheckpointToAndFrom, opts ...grpc.CallOption) (*CalorieBurned, error)
 }
 
 type trackerClient struct {
@@ -86,44 +82,48 @@ func (x *trackerUpdateLocationClient) CloseAndRecv() (*user.Empty, error) {
 	return m, nil
 }
 
-func (c *trackerClient) AddCheckPoint(ctx context.Context, in *Checkpoint, opts ...grpc.CallOption) (*user.Empty, error) {
-	out := new(user.Empty)
-	err := c.cc.Invoke(ctx, "/Tracker/AddCheckPoint", in, out, opts...)
+func (c *trackerClient) Checkpoint(ctx context.Context, in *Position, opts ...grpc.CallOption) (*CheckpointID, error) {
+	out := new(CheckpointID)
+	err := c.cc.Invoke(ctx, "/Tracker/Checkpoint", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *trackerClient) UpdateCheckpoint(ctx context.Context, in *Checkpoint, opts ...grpc.CallOption) (*user.Empty, error) {
-	out := new(user.Empty)
-	err := c.cc.Invoke(ctx, "/Tracker/UpdateCheckpoint", in, out, opts...)
+func (c *trackerClient) UpdatePulseRate(ctx context.Context, opts ...grpc.CallOption) (Tracker_UpdatePulseRateClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Tracker_ServiceDesc.Streams[1], "/Tracker/UpdatePulseRate", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &trackerUpdatePulseRateClient{stream}
+	return x, nil
 }
 
-func (c *trackerClient) GetDietaryChart(ctx context.Context, in *user.UserID, opts ...grpc.CallOption) (*user.DietaryChart, error) {
-	out := new(user.DietaryChart)
-	err := c.cc.Invoke(ctx, "/Tracker/GetDietaryChart", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+type Tracker_UpdatePulseRateClient interface {
+	Send(*PulseRateWithUserId) error
+	Recv() (*Alert, error)
+	grpc.ClientStream
 }
 
-func (c *trackerClient) UpdateBloodPressure(ctx context.Context, in *BloodPressureWithUserId, opts ...grpc.CallOption) (*user.Empty, error) {
-	out := new(user.Empty)
-	err := c.cc.Invoke(ctx, "/Tracker/UpdateBloodPressure", in, out, opts...)
-	if err != nil {
+type trackerUpdatePulseRateClient struct {
+	grpc.ClientStream
+}
+
+func (x *trackerUpdatePulseRateClient) Send(m *PulseRateWithUserId) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *trackerUpdatePulseRateClient) Recv() (*Alert, error) {
+	m := new(Alert)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	return out, nil
+	return m, nil
 }
 
 func (c *trackerClient) GetRealTimeDistanceCovered(ctx context.Context, opts ...grpc.CallOption) (Tracker_GetRealTimeDistanceCoveredClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Tracker_ServiceDesc.Streams[1], "/Tracker/GetRealTimeDistanceCovered", opts...)
+	stream, err := c.cc.NewStream(ctx, &Tracker_ServiceDesc.Streams[2], "/Tracker/GetRealTimeDistanceCovered", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (c *trackerClient) GetRealTimeDistanceCovered(ctx context.Context, opts ...
 }
 
 type Tracker_GetRealTimeDistanceCoveredClient interface {
-	Send(*PositionWithCheckpointId) error
+	Send(*Position) error
 	Recv() (*Distance, error)
 	grpc.ClientStream
 }
@@ -141,43 +141,12 @@ type trackerGetRealTimeDistanceCoveredClient struct {
 	grpc.ClientStream
 }
 
-func (x *trackerGetRealTimeDistanceCoveredClient) Send(m *PositionWithCheckpointId) error {
+func (x *trackerGetRealTimeDistanceCoveredClient) Send(m *Position) error {
 	return x.ClientStream.SendMsg(m)
 }
 
 func (x *trackerGetRealTimeDistanceCoveredClient) Recv() (*Distance, error) {
 	m := new(Distance)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *trackerClient) GetRealTimeCaloriesBurned(ctx context.Context, opts ...grpc.CallOption) (Tracker_GetRealTimeCaloriesBurnedClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Tracker_ServiceDesc.Streams[2], "/Tracker/GetRealTimeCaloriesBurned", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &trackerGetRealTimeCaloriesBurnedClient{stream}
-	return x, nil
-}
-
-type Tracker_GetRealTimeCaloriesBurnedClient interface {
-	Send(*PositionWithCheckpointId) error
-	Recv() (*CalorieBurned, error)
-	grpc.ClientStream
-}
-
-type trackerGetRealTimeCaloriesBurnedClient struct {
-	grpc.ClientStream
-}
-
-func (x *trackerGetRealTimeCaloriesBurnedClient) Send(m *PositionWithCheckpointId) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *trackerGetRealTimeCaloriesBurnedClient) Recv() (*CalorieBurned, error) {
-	m := new(CalorieBurned)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -193,29 +162,16 @@ func (c *trackerClient) GetTotalDistanceBetweenCheckpoint(ctx context.Context, i
 	return out, nil
 }
 
-func (c *trackerClient) GetCalorieBurnedBetweenCheckpoint(ctx context.Context, in *CheckpointToAndFrom, opts ...grpc.CallOption) (*CalorieBurned, error) {
-	out := new(CalorieBurned)
-	err := c.cc.Invoke(ctx, "/Tracker/GetCalorieBurnedBetweenCheckpoint", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // TrackerServer is the server API for Tracker service.
 // All implementations must embed UnimplementedTrackerServer
 // for forward compatibility
 type TrackerServer interface {
 	GetLocation(context.Context, *user.UserID) (*Position, error)
 	UpdateLocation(Tracker_UpdateLocationServer) error
-	AddCheckPoint(context.Context, *Checkpoint) (*user.Empty, error)
-	UpdateCheckpoint(context.Context, *Checkpoint) (*user.Empty, error)
-	GetDietaryChart(context.Context, *user.UserID) (*user.DietaryChart, error)
-	UpdateBloodPressure(context.Context, *BloodPressureWithUserId) (*user.Empty, error)
+	Checkpoint(context.Context, *Position) (*CheckpointID, error)
+	UpdatePulseRate(Tracker_UpdatePulseRateServer) error
 	GetRealTimeDistanceCovered(Tracker_GetRealTimeDistanceCoveredServer) error
-	GetRealTimeCaloriesBurned(Tracker_GetRealTimeCaloriesBurnedServer) error
 	GetTotalDistanceBetweenCheckpoint(context.Context, *CheckpointToAndFrom) (*Distance, error)
-	GetCalorieBurnedBetweenCheckpoint(context.Context, *CheckpointToAndFrom) (*CalorieBurned, error)
 	mustEmbedUnimplementedTrackerServer()
 }
 
@@ -229,29 +185,17 @@ func (UnimplementedTrackerServer) GetLocation(context.Context, *user.UserID) (*P
 func (UnimplementedTrackerServer) UpdateLocation(Tracker_UpdateLocationServer) error {
 	return status.Errorf(codes.Unimplemented, "method UpdateLocation not implemented")
 }
-func (UnimplementedTrackerServer) AddCheckPoint(context.Context, *Checkpoint) (*user.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddCheckPoint not implemented")
+func (UnimplementedTrackerServer) Checkpoint(context.Context, *Position) (*CheckpointID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Checkpoint not implemented")
 }
-func (UnimplementedTrackerServer) UpdateCheckpoint(context.Context, *Checkpoint) (*user.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateCheckpoint not implemented")
-}
-func (UnimplementedTrackerServer) GetDietaryChart(context.Context, *user.UserID) (*user.DietaryChart, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDietaryChart not implemented")
-}
-func (UnimplementedTrackerServer) UpdateBloodPressure(context.Context, *BloodPressureWithUserId) (*user.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateBloodPressure not implemented")
+func (UnimplementedTrackerServer) UpdatePulseRate(Tracker_UpdatePulseRateServer) error {
+	return status.Errorf(codes.Unimplemented, "method UpdatePulseRate not implemented")
 }
 func (UnimplementedTrackerServer) GetRealTimeDistanceCovered(Tracker_GetRealTimeDistanceCoveredServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetRealTimeDistanceCovered not implemented")
 }
-func (UnimplementedTrackerServer) GetRealTimeCaloriesBurned(Tracker_GetRealTimeCaloriesBurnedServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetRealTimeCaloriesBurned not implemented")
-}
 func (UnimplementedTrackerServer) GetTotalDistanceBetweenCheckpoint(context.Context, *CheckpointToAndFrom) (*Distance, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalDistanceBetweenCheckpoint not implemented")
-}
-func (UnimplementedTrackerServer) GetCalorieBurnedBetweenCheckpoint(context.Context, *CheckpointToAndFrom) (*CalorieBurned, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCalorieBurnedBetweenCheckpoint not implemented")
 }
 func (UnimplementedTrackerServer) mustEmbedUnimplementedTrackerServer() {}
 
@@ -310,76 +254,48 @@ func (x *trackerUpdateLocationServer) Recv() (*Position, error) {
 	return m, nil
 }
 
-func _Tracker_AddCheckPoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Checkpoint)
+func _Tracker_Checkpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Position)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TrackerServer).AddCheckPoint(ctx, in)
+		return srv.(TrackerServer).Checkpoint(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Tracker/AddCheckPoint",
+		FullMethod: "/Tracker/Checkpoint",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TrackerServer).AddCheckPoint(ctx, req.(*Checkpoint))
+		return srv.(TrackerServer).Checkpoint(ctx, req.(*Position))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tracker_UpdateCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Checkpoint)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TrackerServer).UpdateCheckpoint(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Tracker/UpdateCheckpoint",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TrackerServer).UpdateCheckpoint(ctx, req.(*Checkpoint))
-	}
-	return interceptor(ctx, in, info, handler)
+func _Tracker_UpdatePulseRate_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TrackerServer).UpdatePulseRate(&trackerUpdatePulseRateServer{stream})
 }
 
-func _Tracker_GetDietaryChart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(user.UserID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TrackerServer).GetDietaryChart(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Tracker/GetDietaryChart",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TrackerServer).GetDietaryChart(ctx, req.(*user.UserID))
-	}
-	return interceptor(ctx, in, info, handler)
+type Tracker_UpdatePulseRateServer interface {
+	Send(*Alert) error
+	Recv() (*PulseRateWithUserId, error)
+	grpc.ServerStream
 }
 
-func _Tracker_UpdateBloodPressure_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BloodPressureWithUserId)
-	if err := dec(in); err != nil {
+type trackerUpdatePulseRateServer struct {
+	grpc.ServerStream
+}
+
+func (x *trackerUpdatePulseRateServer) Send(m *Alert) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *trackerUpdatePulseRateServer) Recv() (*PulseRateWithUserId, error) {
+	m := new(PulseRateWithUserId)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(TrackerServer).UpdateBloodPressure(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Tracker/UpdateBloodPressure",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TrackerServer).UpdateBloodPressure(ctx, req.(*BloodPressureWithUserId))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 func _Tracker_GetRealTimeDistanceCovered_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -388,7 +304,7 @@ func _Tracker_GetRealTimeDistanceCovered_Handler(srv interface{}, stream grpc.Se
 
 type Tracker_GetRealTimeDistanceCoveredServer interface {
 	Send(*Distance) error
-	Recv() (*PositionWithCheckpointId, error)
+	Recv() (*Position, error)
 	grpc.ServerStream
 }
 
@@ -400,34 +316,8 @@ func (x *trackerGetRealTimeDistanceCoveredServer) Send(m *Distance) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *trackerGetRealTimeDistanceCoveredServer) Recv() (*PositionWithCheckpointId, error) {
-	m := new(PositionWithCheckpointId)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func _Tracker_GetRealTimeCaloriesBurned_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(TrackerServer).GetRealTimeCaloriesBurned(&trackerGetRealTimeCaloriesBurnedServer{stream})
-}
-
-type Tracker_GetRealTimeCaloriesBurnedServer interface {
-	Send(*CalorieBurned) error
-	Recv() (*PositionWithCheckpointId, error)
-	grpc.ServerStream
-}
-
-type trackerGetRealTimeCaloriesBurnedServer struct {
-	grpc.ServerStream
-}
-
-func (x *trackerGetRealTimeCaloriesBurnedServer) Send(m *CalorieBurned) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *trackerGetRealTimeCaloriesBurnedServer) Recv() (*PositionWithCheckpointId, error) {
-	m := new(PositionWithCheckpointId)
+func (x *trackerGetRealTimeDistanceCoveredServer) Recv() (*Position, error) {
+	m := new(Position)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -452,24 +342,6 @@ func _Tracker_GetTotalDistanceBetweenCheckpoint_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tracker_GetCalorieBurnedBetweenCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckpointToAndFrom)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TrackerServer).GetCalorieBurnedBetweenCheckpoint(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Tracker/GetCalorieBurnedBetweenCheckpoint",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TrackerServer).GetCalorieBurnedBetweenCheckpoint(ctx, req.(*CheckpointToAndFrom))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Tracker_ServiceDesc is the grpc.ServiceDesc for Tracker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -482,28 +354,12 @@ var Tracker_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Tracker_GetLocation_Handler,
 		},
 		{
-			MethodName: "AddCheckPoint",
-			Handler:    _Tracker_AddCheckPoint_Handler,
-		},
-		{
-			MethodName: "UpdateCheckpoint",
-			Handler:    _Tracker_UpdateCheckpoint_Handler,
-		},
-		{
-			MethodName: "GetDietaryChart",
-			Handler:    _Tracker_GetDietaryChart_Handler,
-		},
-		{
-			MethodName: "UpdateBloodPressure",
-			Handler:    _Tracker_UpdateBloodPressure_Handler,
+			MethodName: "Checkpoint",
+			Handler:    _Tracker_Checkpoint_Handler,
 		},
 		{
 			MethodName: "GetTotalDistanceBetweenCheckpoint",
 			Handler:    _Tracker_GetTotalDistanceBetweenCheckpoint_Handler,
-		},
-		{
-			MethodName: "GetCalorieBurnedBetweenCheckpoint",
-			Handler:    _Tracker_GetCalorieBurnedBetweenCheckpoint_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
@@ -513,14 +369,14 @@ var Tracker_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "GetRealTimeDistanceCovered",
-			Handler:       _Tracker_GetRealTimeDistanceCovered_Handler,
+			StreamName:    "UpdatePulseRate",
+			Handler:       _Tracker_UpdatePulseRate_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "GetRealTimeCaloriesBurned",
-			Handler:       _Tracker_GetRealTimeCaloriesBurned_Handler,
+			StreamName:    "GetRealTimeDistanceCovered",
+			Handler:       _Tracker_GetRealTimeDistanceCovered_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

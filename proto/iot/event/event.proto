@@ -5,6 +5,7 @@ option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protoge
 import "iot/user/user.proto";
 import "iot/group/group.proto";
 import "google/api/datetime.proto";
+import "google/api/annotations.proto";
 
 enum EventState {
   ongoing = 0;
@@ -45,16 +46,44 @@ message EventList {
   repeated Event eventList = 1;
 }
 
-message EvenetId {
+message EventId {
   uint64 e_id = 1;
 }
 
 
 service EventManager {
-  rpc AddEvent(Event) returns (Empty) {}
-  rpc UpdateEvent(Event) returns (Empty) {}
-  rpc DeleteEvent(EvenetId) returns (Empty) {}
-  rpc GetSingleEventDetails(EvenetId) returns (Event) {}
-  rpc ListEventsOfSingleUser(UserID) returns (EventList) {}
-  rpc ListEventsOfSingleGroup(GroupId) returns (EventList) {}
+  rpc AddEvent(Event) returns (Empty) {
+    option (google.api.http) = {
+      post: "/v1/event"
+      body: "*"
+    };
+  }
+  rpc UpdateEvent(Event) returns (Empty) {
+    option (google.api.http) = {
+      put: "/v1/event/{e_id}"
+      body: "*"
+    };
+  }
+  rpc DeleteEvent(EventId) returns (Empty) {
+    option (google.api.http) = {
+      delete: "/v1/event/{e_id}"
+    };
+  }
+  rpc GetSingleEventDetails(EventId) returns (Event) {
+    option (google.api.http) = {
+      get: "/v1/event/{e_id}"
+    };
+  }
+  rpc ListEventsOfSingleUser(UserID) returns (EventList) {
+    option (google.api.http) = {
+      // this is not good. should remove it from here
+      get: "/v1/user/{id}/events"
+    };
+  }
+  rpc ListEventsOfSingleGroup(GroupId) returns (EventList) {
+    option (google.api.http) = {
+      // this is not good. should remove it from here
+      get: "/v1/group/{g_id}/events"
+    };
+  }
 }

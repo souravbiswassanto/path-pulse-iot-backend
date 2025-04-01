@@ -26,8 +26,8 @@ const _ = grpc.SupportPackageIsVersion7
 type EventManagerClient interface {
 	AddEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*user.Empty, error)
 	UpdateEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*user.Empty, error)
-	DeleteEvent(ctx context.Context, in *EvenetId, opts ...grpc.CallOption) (*user.Empty, error)
-	GetSingleEventDetails(ctx context.Context, in *EvenetId, opts ...grpc.CallOption) (*Event, error)
+	DeleteEvent(ctx context.Context, in *EventId, opts ...grpc.CallOption) (*user.Empty, error)
+	GetSingleEventDetails(ctx context.Context, in *EventId, opts ...grpc.CallOption) (*Event, error)
 	ListEventsOfSingleUser(ctx context.Context, in *user.UserID, opts ...grpc.CallOption) (*EventList, error)
 	ListEventsOfSingleGroup(ctx context.Context, in *group.GroupId, opts ...grpc.CallOption) (*EventList, error)
 }
@@ -58,7 +58,7 @@ func (c *eventManagerClient) UpdateEvent(ctx context.Context, in *Event, opts ..
 	return out, nil
 }
 
-func (c *eventManagerClient) DeleteEvent(ctx context.Context, in *EvenetId, opts ...grpc.CallOption) (*user.Empty, error) {
+func (c *eventManagerClient) DeleteEvent(ctx context.Context, in *EventId, opts ...grpc.CallOption) (*user.Empty, error) {
 	out := new(user.Empty)
 	err := c.cc.Invoke(ctx, "/EventManager/DeleteEvent", in, out, opts...)
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *eventManagerClient) DeleteEvent(ctx context.Context, in *EvenetId, opts
 	return out, nil
 }
 
-func (c *eventManagerClient) GetSingleEventDetails(ctx context.Context, in *EvenetId, opts ...grpc.CallOption) (*Event, error) {
+func (c *eventManagerClient) GetSingleEventDetails(ctx context.Context, in *EventId, opts ...grpc.CallOption) (*Event, error) {
 	out := new(Event)
 	err := c.cc.Invoke(ctx, "/EventManager/GetSingleEventDetails", in, out, opts...)
 	if err != nil {
@@ -100,8 +100,8 @@ func (c *eventManagerClient) ListEventsOfSingleGroup(ctx context.Context, in *gr
 type EventManagerServer interface {
 	AddEvent(context.Context, *Event) (*user.Empty, error)
 	UpdateEvent(context.Context, *Event) (*user.Empty, error)
-	DeleteEvent(context.Context, *EvenetId) (*user.Empty, error)
-	GetSingleEventDetails(context.Context, *EvenetId) (*Event, error)
+	DeleteEvent(context.Context, *EventId) (*user.Empty, error)
+	GetSingleEventDetails(context.Context, *EventId) (*Event, error)
 	ListEventsOfSingleUser(context.Context, *user.UserID) (*EventList, error)
 	ListEventsOfSingleGroup(context.Context, *group.GroupId) (*EventList, error)
 	mustEmbedUnimplementedEventManagerServer()
@@ -117,10 +117,10 @@ func (UnimplementedEventManagerServer) AddEvent(context.Context, *Event) (*user.
 func (UnimplementedEventManagerServer) UpdateEvent(context.Context, *Event) (*user.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateEvent not implemented")
 }
-func (UnimplementedEventManagerServer) DeleteEvent(context.Context, *EvenetId) (*user.Empty, error) {
+func (UnimplementedEventManagerServer) DeleteEvent(context.Context, *EventId) (*user.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteEvent not implemented")
 }
-func (UnimplementedEventManagerServer) GetSingleEventDetails(context.Context, *EvenetId) (*Event, error) {
+func (UnimplementedEventManagerServer) GetSingleEventDetails(context.Context, *EventId) (*Event, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSingleEventDetails not implemented")
 }
 func (UnimplementedEventManagerServer) ListEventsOfSingleUser(context.Context, *user.UserID) (*EventList, error) {
@@ -179,7 +179,7 @@ func _EventManager_UpdateEvent_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _EventManager_DeleteEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EvenetId)
+	in := new(EventId)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -191,13 +191,13 @@ func _EventManager_DeleteEvent_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/EventManager/DeleteEvent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventManagerServer).DeleteEvent(ctx, req.(*EvenetId))
+		return srv.(EventManagerServer).DeleteEvent(ctx, req.(*EventId))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _EventManager_GetSingleEventDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EvenetId)
+	in := new(EventId)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func _EventManager_GetSingleEventDetails_Handler(srv interface{}, ctx context.Co
 		FullMethod: "/EventManager/GetSingleEventDetails",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventManagerServer).GetSingleEventDetails(ctx, req.(*EvenetId))
+		return srv.(EventManagerServer).GetSingleEventDetails(ctx, req.(*EventId))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user";
 
 import "google/api/datetime.proto";
+import "google/api/annotations.proto";
 
 enum Gender {
   male = 0;
@@ -10,26 +11,10 @@ enum Gender {
   other = 2;
 }
 
-enum FitnessGoal {
-  UNKNOWN = 0;
-  WEIGHT_LOSS = 1;
-  MUSCLE_GAIN = 2;
-  MAINTENANCE = 3;
-}
-
-message BloodPressure {
-  int32 systolic = 1;
-  int32 diastolic = 2;
-}
-
 message UserID {
   uint64 id = 1;
 }
-message DietaryChart {
-  int32 protein = 1;
-  int32 lipid = 2;
-  int32 carbs = 3;
-}
+
 message Empty {}
 
 message User {
@@ -43,16 +28,31 @@ message User {
   string email = 8;
   string phone_no = 9;
   string address = 10;
-  BloodPressure bp = 11;
-  FitnessGoal fitness_goal = 12;
-  google.type.DateTime created_at = 13;
-  google.type.DateTime updated_at = 14;
-  float calories_burned = 15;
+  google.type.DateTime created_at = 11;
+  google.type.DateTime updated_at = 12;
 }
 
 service UserManager {
-  rpc GetUser(UserID) returns (User) {}
-  rpc CreateUser(User) returns (Empty) {}
-  rpc UpdateUser(User) returns (Empty) {}
-  rpc DeleteUser(UserID) returns (Empty) {}
+  rpc GetUser(UserID) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/user/{id}"
+    };
+  }
+  rpc CreateUser(User) returns (Empty) {
+    option (google.api.http) = {
+      post: "/v1/user"
+      body: "*"
+    };
+  }
+  rpc UpdateUser(User) returns (Empty) {
+    option (google.api.http) = {
+      put: "/v1/user/{id.id}"
+      body: "*"
+    };
+  }
+  rpc DeleteUser(UserID) returns (Empty) {
+    option (google.api.http) = {
+      delete: "/v1/user/{id}"
+    };
+  }
 }

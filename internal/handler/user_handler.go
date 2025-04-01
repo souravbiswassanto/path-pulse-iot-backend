@@ -6,7 +6,6 @@ import (
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/models"
 	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/service"
 	proto "github.com/souravbiswassanto/path-pulse-iot-backend/protogen/golang/iot/user"
-	"gomodules.xyz/pointer"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -16,9 +15,18 @@ type UserServerHandlerSer struct {
 	proto.UnimplementedUserManagerServer
 }
 
-func NewUserServerHandler() *UserServerHandlerSer {
+func NewUserServerHandler(svc *service.UserService) *UserServerHandlerSer {
+	////ctx, cancel := context.WithCancel(context.TODO())
+	////defer cancel()
+	//// TODO: need to redesign here
+	//sqlDb, err := postgres.NewUserSqlDB(nil)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//cacheDb := in_memory.NewEventInMemoryStore(nil)
+	//svc := service.NewUserService(sqlDb, cacheDb)
 	return &UserServerHandlerSer{
-		svc: service.NewUserService(),
+		svc: svc,
 	}
 }
 
@@ -115,48 +123,4 @@ func (uch *UserClientHandler) DeleteUser(userId uint64) error {
 		Id: userId,
 	})
 	return err
-}
-
-func userProtoToModel(user *proto.User) *models.User {
-	return &models.User{
-		ID:   (models.UserID)(user.Id.GetId()),
-		Name: user.Name,
-		Age:  user.Age,
-		ContactInfo: models.ContactInfo{
-			UserID:  (*models.UserID)(pointer.Uint64P(user.Id.GetId())),
-			Email:   user.Email,
-			Phone:   user.PhoneNo,
-			Address: user.Address,
-		},
-		Factors: models.Factors{
-			UserID:        (*models.UserID)(pointer.Uint64P(user.Id.GetId())),
-			Height:        user.Height,
-			Weight:        user.Weight,
-			DiabeticLevel: user.DiabeticLevel,
-			BP: models.BloodPressure{
-				Systolic:  user.Bp.GetSystolic(),
-				Diastolic: user.Bp.GetDiastolic(),
-			},
-		},
-		Gender: user.Gender.String(),
-	}
-}
-
-func userModelToProto(user *models.User) *proto.User {
-	return &proto.User{
-		Id:            &proto.UserID{Id: uint64(user.ID)},
-		Name:          user.Name,
-		Age:           user.Age,
-		Email:         user.ContactInfo.Email,
-		PhoneNo:       user.ContactInfo.Phone,
-		Address:       user.ContactInfo.Address,
-		Height:        user.Factors.Height,
-		Weight:        user.Factors.Weight,
-		DiabeticLevel: user.Factors.DiabeticLevel,
-		Bp: &proto.BloodPressure{
-			Systolic:  user.Factors.BP.Systolic,
-			Diastolic: user.Factors.BP.Diastolic,
-		},
-		Gender: proto.Gender(proto.Gender_value[user.Gender]),
-	}
 }
