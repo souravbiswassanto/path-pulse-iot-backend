@@ -40,9 +40,16 @@ func request_Tracker_GetLocation_0(ctx context.Context, marshaler runtime.Marsha
 	var (
 		protoReq user.UserID
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	io.Copy(io.Discard, req.Body)
+	val, ok := pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+	}
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 	msg, err := client.GetLocation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -52,9 +59,15 @@ func local_request_Tracker_GetLocation_0(ctx context.Context, marshaler runtime.
 	var (
 		protoReq user.UserID
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+	}
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 	msg, err := server.GetLocation(ctx, &protoReq)
 	return msg, metadata, err
@@ -211,12 +224,18 @@ func request_Tracker_GetRealTimeDistanceCovered_0(ctx context.Context, marshaler
 	return stream, metadata, nil
 }
 
+var filter_Tracker_GetTotalDistanceBetweenCheckpoint_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+
 func request_Tracker_GetTotalDistanceBetweenCheckpoint_0(ctx context.Context, marshaler runtime.Marshaler, client TrackerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq CheckpointToAndFrom
 		metadata runtime.ServerMetadata
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+	io.Copy(io.Discard, req.Body)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Tracker_GetTotalDistanceBetweenCheckpoint_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := client.GetTotalDistanceBetweenCheckpoint(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -228,7 +247,10 @@ func local_request_Tracker_GetTotalDistanceBetweenCheckpoint_0(ctx context.Conte
 		protoReq CheckpointToAndFrom
 		metadata runtime.ServerMetadata
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Tracker_GetTotalDistanceBetweenCheckpoint_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := server.GetTotalDistanceBetweenCheckpoint(ctx, &protoReq)
@@ -241,13 +263,13 @@ func local_request_Tracker_GetTotalDistanceBetweenCheckpoint_0(ctx context.Conte
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterTrackerHandlerFromEndpoint instead.
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterTrackerHandlerServer(ctx context.Context, mux *runtime.ServeMux, server TrackerServer) error {
-	mux.Handle(http.MethodPost, pattern_Tracker_GetLocation_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_Tracker_GetLocation_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.Tracker/GetLocation", runtime.WithHTTPPathPattern("/Tracker/GetLocation"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.Tracker/GetLocation", runtime.WithHTTPPathPattern("/v1/tracker/location/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -274,7 +296,7 @@ func RegisterTrackerHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.Tracker/Checkpoint", runtime.WithHTTPPathPattern("/Tracker/Checkpoint"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.Tracker/Checkpoint", runtime.WithHTTPPathPattern("/v1/tracker/checkpoint"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -296,19 +318,19 @@ func RegisterTrackerHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 		return
 	})
 
-	mux.Handle(http.MethodPost, pattern_Tracker_GetRealTimeDistanceCovered_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_Tracker_GetRealTimeDistanceCovered_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
 		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
 	})
-	mux.Handle(http.MethodPost, pattern_Tracker_GetTotalDistanceBetweenCheckpoint_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_Tracker_GetTotalDistanceBetweenCheckpoint_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.Tracker/GetTotalDistanceBetweenCheckpoint", runtime.WithHTTPPathPattern("/Tracker/GetTotalDistanceBetweenCheckpoint"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.Tracker/GetTotalDistanceBetweenCheckpoint", runtime.WithHTTPPathPattern("/v1/tracker/distance/checkpoint"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -362,11 +384,11 @@ func RegisterTrackerHandler(ctx context.Context, mux *runtime.ServeMux, conn *gr
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "TrackerClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterTrackerHandlerClient(ctx context.Context, mux *runtime.ServeMux, client TrackerClient) error {
-	mux.Handle(http.MethodPost, pattern_Tracker_GetLocation_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_Tracker_GetLocation_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/GetLocation", runtime.WithHTTPPathPattern("/Tracker/GetLocation"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/GetLocation", runtime.WithHTTPPathPattern("/v1/tracker/location/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -383,7 +405,7 @@ func RegisterTrackerHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/UpdateLocation", runtime.WithHTTPPathPattern("/Tracker/UpdateLocation"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/UpdateLocation", runtime.WithHTTPPathPattern("/v1/tracker/location"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -400,7 +422,7 @@ func RegisterTrackerHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/Checkpoint", runtime.WithHTTPPathPattern("/Tracker/Checkpoint"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/Checkpoint", runtime.WithHTTPPathPattern("/v1/tracker/checkpoint"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -417,7 +439,7 @@ func RegisterTrackerHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/UpdatePulseRate", runtime.WithHTTPPathPattern("/Tracker/UpdatePulseRate"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/UpdatePulseRate", runtime.WithHTTPPathPattern("/v1/tracker/pulserate"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -430,11 +452,11 @@ func RegisterTrackerHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		}
 		forward_Tracker_UpdatePulseRate_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_Tracker_GetRealTimeDistanceCovered_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_Tracker_GetRealTimeDistanceCovered_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/GetRealTimeDistanceCovered", runtime.WithHTTPPathPattern("/Tracker/GetRealTimeDistanceCovered"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/GetRealTimeDistanceCovered", runtime.WithHTTPPathPattern("/v1/tracker/distance"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -447,11 +469,11 @@ func RegisterTrackerHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		}
 		forward_Tracker_GetRealTimeDistanceCovered_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_Tracker_GetTotalDistanceBetweenCheckpoint_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_Tracker_GetTotalDistanceBetweenCheckpoint_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/GetTotalDistanceBetweenCheckpoint", runtime.WithHTTPPathPattern("/Tracker/GetTotalDistanceBetweenCheckpoint"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/.Tracker/GetTotalDistanceBetweenCheckpoint", runtime.WithHTTPPathPattern("/v1/tracker/distance/checkpoint"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -468,12 +490,12 @@ func RegisterTrackerHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 }
 
 var (
-	pattern_Tracker_GetLocation_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"Tracker", "GetLocation"}, ""))
-	pattern_Tracker_UpdateLocation_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"Tracker", "UpdateLocation"}, ""))
-	pattern_Tracker_Checkpoint_0                        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"Tracker", "Checkpoint"}, ""))
-	pattern_Tracker_UpdatePulseRate_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"Tracker", "UpdatePulseRate"}, ""))
-	pattern_Tracker_GetRealTimeDistanceCovered_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"Tracker", "GetRealTimeDistanceCovered"}, ""))
-	pattern_Tracker_GetTotalDistanceBetweenCheckpoint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"Tracker", "GetTotalDistanceBetweenCheckpoint"}, ""))
+	pattern_Tracker_GetLocation_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "tracker", "location", "id"}, ""))
+	pattern_Tracker_UpdateLocation_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "tracker", "location"}, ""))
+	pattern_Tracker_Checkpoint_0                        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "tracker", "checkpoint"}, ""))
+	pattern_Tracker_UpdatePulseRate_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "tracker", "pulserate"}, ""))
+	pattern_Tracker_GetRealTimeDistanceCovered_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "tracker", "distance"}, ""))
+	pattern_Tracker_GetTotalDistanceBetweenCheckpoint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "tracker", "distance", "checkpoint"}, ""))
 )
 
 var (

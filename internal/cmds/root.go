@@ -21,7 +21,7 @@ func NewRootCmd() *cobra.Command {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 	rootCmd.AddCommand(NewCmdServer(ctx))
-	rootCmd.AddCommand(NewCmdClient(ctx))
+	rootCmd.AddCommand(NewCmdGateway(ctx))
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	return rootCmd

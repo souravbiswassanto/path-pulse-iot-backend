@@ -2,7 +2,7 @@ package cmds
 
 import (
 	"context"
-	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/cmds/server"
+	"github.com/souravbiswassanto/path-pulse-iot-backend/internal/cmds/_server"
 	"github.com/spf13/cobra"
 )
 

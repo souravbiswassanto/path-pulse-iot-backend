@@ -4,6 +4,7 @@ option go_package = "github.com/souravbiswassanto/path-pulse-iot-backend/protoge
 
 import "iot/user/user.proto";
 import "google/api/datetime.proto";
+import "google/api/annotations.proto";
 
 message Position {
   uint64 user_id = 1;
@@ -43,10 +44,37 @@ message Alert {
 }
 
 service Tracker {
-  rpc GetLocation(UserID) returns (Position) {}
-  rpc UpdateLocation(stream Position) returns (Empty) {}
-  rpc Checkpoint(Position) returns (CheckpointID) {}
-  rpc UpdatePulseRate(stream PulseRateWithUserId) returns(stream Alert) {}
-  rpc GetRealTimeDistanceCovered(stream Position) returns (stream Distance) {}
-  rpc GetTotalDistanceBetweenCheckpoint(CheckpointToAndFrom) returns (Distance) {}
+  rpc GetLocation(UserID) returns (Position) {
+    option (google.api.http) = {
+      get: "/v1/tracker/location/{id}"
+    };
+  }
+  rpc UpdateLocation(stream Position) returns (Empty) {
+    option (google.api.http) = {
+      post: "/v1/tracker/location"
+      body: "*"
+    };
+  }
+  rpc Checkpoint(Position) returns (CheckpointID) {
+    option (google.api.http) = {
+      post: "/v1/tracker/checkpoint"
+      body: "*"
+    };
+  }
+  rpc UpdatePulseRate(stream PulseRateWithUserId) returns(stream Alert) {
+    option (google.api.http) = {
+      post: "/v1/tracker/pulserate"
+      body: "*"
+    };
+  }
+  rpc GetRealTimeDistanceCovered(stream Position) returns (stream Distance) {
+      option (google.api.http) = {
+        get: "/v1/tracker/distance"
+      };
+  }
+  rpc GetTotalDistanceBetweenCheckpoint(CheckpointToAndFrom) returns (Distance) {
+    option (google.api.http) = {
+      get: "/v1/tracker/distance/checkpoint"
+    };
+  }
 }
